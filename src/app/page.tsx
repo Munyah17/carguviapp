@@ -1,69 +1,251 @@
-import Image from "next/image";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import {
+  getCategories,
+  getCustomerVehicles,
+  getPopularSearches,
+  getVerifiedProducts,
+} from "@/lib/queries";
+import { ProductCard } from "@/components/product/product-card";
+import {
+  IconCar,
+  IconChevronRight,
+  IconSearch,
+  IconShield,
+} from "@/components/ui/icons";
+import { ButtonLink } from "@/components/ui/button";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [categories, verified, popular, vehicles] = await Promise.all([
+    getCategories(),
+    getVerifiedProducts(8),
+    getPopularSearches(),
+    user ? getCustomerVehicles(user.id) : Promise.resolve([]),
+  ]);
+
+  const primaryVehicle = vehicles.find((v: any) => v.is_primary) ?? vehicles[0];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+    <div className="mx-auto max-w-6xl px-4">
+      {/* Hero */}
+      <section className="border-b border-surface-200 py-8 sm:py-12">
+        <h1 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
+          What part are you looking for?
+        </h1>
+        <p className="mt-1 text-sm text-ink-500">
+          Search Harare&apos;s parts network. See real availability, confirmed by
+          Carguvi.
+        </p>
+        <form action="/search" className="mt-4 flex gap-2">
+          <div className="relative flex-1">
+            <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input
+              type="search"
+              name="q"
+              placeholder="e.g. Mazda Demio new shape petrol engine"
+              className="h-12 w-full rounded-xl border border-surface-300 bg-white pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+          <button
+            type="submit"
+            className="tap h-12 rounded-xl bg-brand-700 px-5 text-sm font-medium text-white hover:bg-brand-800"
           >
-            Documentation
-          </a>
+            Search
+          </button>
+        </form>
+
+        {/* My Vehicle */}
+        {primaryVehicle ? (
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-brand-700">
+              <IconCar className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-brand-600">
+                My vehicle
+              </p>
+              <p className="truncate text-sm font-semibold text-ink-900">
+                {primaryVehicle.vehicle_makes?.name}{" "}
+                {primaryVehicle.vehicle_models?.name}
+                {primaryVehicle.vehicle_generations?.name
+                  ? ` • ${primaryVehicle.vehicle_generations.name}`
+                  : ""}
+                {primaryVehicle.vehicle_engines?.name
+                  ? ` • ${primaryVehicle.vehicle_engines.name}`
+                  : ""}
+              </p>
+            </div>
+            <ButtonLink
+              href={`/search?generation_id=${primaryVehicle.generation_id ?? ""}&engine_id=${primaryVehicle.engine_id ?? ""}`}
+              variant="outline"
+              size="sm"
+            >
+              Find parts
+            </ButtonLink>
+          </div>
+        ) : (
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-dashed border-surface-300 bg-surface-50 p-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-ink-400">
+              <IconCar className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-ink-700">
+                Add your vehicle for exact-fit results
+              </p>
+            </div>
+            <ButtonLink href="/garage" variant="outline" size="sm">
+              Add vehicle
+            </ButtonLink>
+          </div>
+        )}
+      </section>
+
+      {/* Categories */}
+      <section className="py-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-ink-900">Categories</h2>
+          <Link
+            href="/categories"
+            className="tap flex items-center text-sm font-medium text-brand-700"
+          >
+            All <IconChevronRight className="h-4 w-4" />
+          </Link>
         </div>
-      </main>
+        <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+          {categories.slice(0, 10).map((c: any) => (
+            <Link
+              key={c.id}
+              href={`/search?category_id=${c.id}`}
+              className="tap flex flex-col items-center gap-1.5 rounded-xl border border-surface-200 bg-white px-1 py-3 text-center hover:border-brand-200 hover:bg-brand-50"
+            >
+              <CategoryGlyph slug={c.slug} />
+              <span className="text-[11px] font-medium leading-tight text-ink-700">
+                {c.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Popular searches */}
+      {popular.length > 0 ? (
+        <section className="pb-6">
+          <h2 className="mb-3 text-base font-semibold text-ink-900">
+            Popular searches
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {popular.map((q) => (
+              <Link
+                key={q}
+                href={`/search?q=${encodeURIComponent(q)}`}
+                className="tap rounded-full border border-surface-300 bg-surface-50 px-3 py-1.5 text-sm text-ink-700 hover:border-brand-300 hover:bg-brand-50"
+              >
+                {q}
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Verified near you */}
+      <section className="pb-10">
+        <div className="mb-3 flex items-center gap-2">
+          <IconShield className="h-4 w-4 text-brand-600" />
+          <h2 className="text-base font-semibold text-ink-900">
+            Verified near you
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {verified.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      </section>
     </div>
+  );
+}
+
+function CategoryGlyph({ slug }: { slug: string }) {
+  // Simple monochrome automotive glyphs keyed by category slug.
+  const cls = "h-6 w-6 text-brand-700";
+  const paths: Record<string, React.ReactNode> = {
+    engines: (
+      <>
+        <rect x="5" y="7" width="14" height="11" rx="2" />
+        <path d="M9 7V4h6v3M8 18v2M16 18v2M9 10.5h6" />
+      </>
+    ),
+    gearboxes: (
+      <>
+        <circle cx="12" cy="12" r="7" />
+        <circle cx="12" cy="12" r="2.5" />
+        <path d="M12 5v2.5M12 16.5V19M5 12h2.5M16.5 12H19" />
+      </>
+    ),
+    brakes: (
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="3" />
+        <circle cx="12" cy="7" r="0.8" />
+        <circle cx="7.5" cy="14.5" r="0.8" />
+        <circle cx="16.5" cy="14.5" r="0.8" />
+      </>
+    ),
+    suspension: <path d="M12 3v3m0 0c-3 0-3 3 0 3s3 3 0 3-3 3 0 3 3 3 0 3m0 0v3" />,
+    electrical: <path d="M13 2 5 13h6l-1 9 8-11h-6l1-9Z" />,
+    "body-parts": (
+      <>
+        <path d="M4 16c0-3 2.5-5 5-5h1l3-4h5l2 4h1a2 2 0 0 1 0 5h-1.5" />
+        <path d="M6 16h12" />
+        <circle cx="8" cy="16" r="0.5" />
+        <circle cx="16" cy="16" r="0.5" />
+      </>
+    ),
+    tyres: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="12" cy="12" r="1" />
+      </>
+    ),
+    batteries: (
+      <>
+        <rect x="3" y="8" width="18" height="10" rx="2" />
+        <path d="M8 8V5h3v3M13 8V5h3v3M8 13h2M15 13h2" />
+      </>
+    ),
+    "car-audio": (
+      <>
+        <rect x="4" y="7" width="16" height="10" rx="2" />
+        <circle cx="9" cy="12" r="2" />
+        <path d="M14 10.5h4M14 13.5h4" />
+      </>
+    ),
+    accessories: (
+      <>
+        <path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14.5 12 12 9.5l2.7-3.2Z" />
+      </>
+    ),
+  };
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cls}
+      aria-hidden
+    >
+      {paths[slug] ?? paths.accessories}
+    </svg>
   );
 }

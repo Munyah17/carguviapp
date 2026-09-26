@@ -1,0 +1,95 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getAIProvider } from "@/lib/services/ai";
+import { daysSince } from "@/lib/format";
+
+/**
+ * GET /api/reminders — scheduled job (Vercel Cron / supabase scheduler).
+ *
+ * Finds vendors with stale listings and sends ONE batched, prioritised
+ * reminder per vendor — never a notification storm. AI drafts the copy;
+ * inventory state is untouched (AI never decides stock).
+ *
+ * Protect with CRON_SECRET in production.
+ */
+export async function GET(request: NextRequest) {
+  const secret = process.env.CRON_SECRET;
+  if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
+  const staleDays = 14;
+  const maxPerReminder = 3;
+
+  const { data: products } = await admin
+    .from("products")
+    .select(
+      "id, title, availability, view_count, carguvi_verified_at, seller_confirmed_at, seller_updated_at, vendors(id, business_name, owner_user_id)",
+    )
+    .eq("status", "active")
+    .neq("availability", "out_of_stock");
+
+  // Group stale products by vendor owner
+  const byOwner = new Map<
+    string,
+    { vendorName: string; stale: { id: string; title: string; daysStale: number; views: number }[] }
+  >();
+  for (const p of products ?? []) {
+    const days = daysSince(
+      p.seller_confirmed_at ?? p.seller_updated_at ?? undefined,
+    );
+    if (days === null || days <= staleDays) continue;
+    const owner = (p.vendors as any)?.owner_user_id;
+    if (!owner) continue;
+    if (!byOwner.has(owner)) {
+      byOwner.set(owner, {
+        vendorName: (p.vendors as any).business_name,
+        stale: [],
+      });
+    }
+    byOwner.get(owner)!.stale.push({
+      id: p.id,
+      title: p.title,
+      daysStale: days,
+      views: p.view_count ?? 0,
+    });
+  }
+
+  const ai = getAIProvider();
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  let sent = 0;
+
+  for (const [ownerId, group] of byOwner) {
+    // One reminder per vendor per day max.
+    const { data: recent } = await admin
+      .from("notifications")
+      .select("id")
+      .eq("user_id", ownerId)
+      .eq("type", "listing_confirmation")
+      .gte("created_at", since)
+      .limit(1);
+    if (recent?.length) continue;
+
+    // Prioritise by customer interest (views), cap the list.
+    const top = group.stale
+      .sort((a, b) => b.views - a.views)
+      .slice(0, maxPerReminder);
+
+    const body = await ai.generateReminderCopy({
+      vendorName: group.vendorName,
+      listings: top.map((t) => ({ title: t.title, daysStale: t.daysStale })),
+    });
+
+    await admin.from("notifications").insert({
+      user_id: ownerId,
+      type: "listing_confirmation",
+      title: `${group.stale.length} listing${group.stale.length === 1 ? "" : "s"} need confirmation`,
+      body,
+      data: { product_ids: top.map((t) => t.id), total_stale: group.stale.length },
+    });
+    sent++;
+  }
+
+  return NextResponse.json({ ok: true, vendors_notified: sent });
+}

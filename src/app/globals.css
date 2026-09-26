@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1c2430;
 }
 
 @theme inline {
@@ -12,15 +12,54 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  /* Deep professional blue — primary brand */
+  --color-brand-50: #eef5fb;
+  --color-brand-100: #d8e9f5;
+  --color-brand-200: #b0d1ea;
+  --color-brand-300: #7fb2d9;
+  --color-brand-400: #4d8cc2;
+  --color-brand-500: #2f6da6;
+  --color-brand-600: #1f568c;
+  --color-brand-700: #184572;
+  --color-brand-800: #143a5e;
+  --color-brand-900: #0f2c48;
+  --color-brand-950: #0a2034;
+
+  /* Restrained trust green */
+  --color-trust-50: #eef9f1;
+  --color-trust-100: #d7f0e0;
+  --color-trust-500: #2c8a4c;
+  --color-trust-600: #227a40;
+  --color-trust-700: #1c6536;
+
+  /* Charcoal text scale */
+  --color-ink-900: #161d26;
+  --color-ink-700: #33404f;
+  --color-ink-500: #5a6878;
+  --color-ink-400: #8a94a3;
+
+  /* Neutral surfaces */
+  --color-surface-50: #f7f8fa;
+  --color-surface-100: #eef1f4;
+  --color-surface-200: #e2e6ec;
+  --color-surface-300: #cdd4de;
+
+  /* Semantic freshness */
+  --color-fresh-green: #227a40;
+  --color-fresh-amber: #b57514;
+  --color-fresh-gray: #8a94a3;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin mobile-safe tap targets */
+@utility tap {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }

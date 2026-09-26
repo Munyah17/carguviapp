@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#eef1f4"/>
+  <rect x="120" y="180" width="560" height="240" rx="16" fill="#e2e6ec" stroke="#cdd4de" stroke-width="2"/>
+  <path d="M120 420 L560 180 M200 420 L640 180" stroke="#d6dce4" stroke-width="2"/>
+  <text x="400" y="310" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#8a94a3" text-anchor="middle">CAR RADIO</text>
+  <text x="400" y="350" font-family="Arial, sans-serif" font-size="18" fill="#a5adba" text-anchor="middle">Photo pending verification</text>
+</svg>
