@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { IconCart, IconUser } from "@/components/ui/icons";
+import { MobileMenu } from "./mobile-menu";
 
 export function Logo({ className = "h-7" }: { className?: string }) {
   return (
@@ -24,6 +25,7 @@ const NAV_LINKS = [
   { href: "/search", label: "Shop Parts" },
   { href: "/categories", label: "Categories" },
   { href: "/garage", label: "My Garage" },
+  { href: "/request-part", label: "Request a Part" },
   { href: "/vendor/apply", label: "Sell on Carguvi" },
 ];
 
@@ -60,21 +62,20 @@ export async function Header() {
           </Link>
           <Link
             href={user ? "/account" : "/auth/sign-in"}
-            className="tap flex items-center gap-2 rounded-lg p-2 text-sm font-medium text-ink-700 hover:bg-surface-100"
+            className="tap hidden items-center gap-2 rounded-lg p-2 text-sm font-medium text-ink-700 hover:bg-surface-100 sm:flex"
           >
             <IconUser className="h-5 w-5" />
-            <span className="hidden sm:inline">
-              {user ? "Account" : "Sign in"}
-            </span>
+            <span>{user ? "Account" : "Sign in"}</span>
           </Link>
           {!user ? (
             <Link
               href="/auth/register"
-              className="tap hidden rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 sm:inline-block"
+              className="tap rounded-lg bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-800 sm:px-4 sm:py-2 sm:text-sm"
             >
               Get Started
             </Link>
           ) : null}
+          <MobileMenu signedIn={!!user} />
         </div>
       </div>
     </header>

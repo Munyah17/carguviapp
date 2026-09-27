@@ -57,6 +57,7 @@ export function BottomNav({ isVendor, isAdmin, isEnumerator, signedIn }: Props) 
         { href: "/orders", label: "My orders" },
         { href: "/wishlist", label: "Wishlist" },
         { href: "/inquiries", label: "My inquiries" },
+        { href: "/request-part", label: "Request a part (import)" },
       ],
     },
     {

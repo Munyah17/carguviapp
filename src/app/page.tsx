@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getCategories,
   getCustomerVehicles,
+  getHeroSlides,
   getPopularSearches,
   getVerifiedProducts,
   searchProducts,
@@ -43,17 +44,13 @@ export default async function HomePage() {
       getVerifiedProducts(8),
       getPopularSearches(),
       user ? getCustomerVehicles(user.id) : Promise.resolve([]),
-      supabase
-        .from("hero_slides")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order"),
+      getHeroSlides(),
     ]);
     categories = cats;
     verified = ver;
     popular = pop;
     vehicles = veh;
-    slides = (slideRes.data ?? []) as HeroSlide[];
+    slides = slideRes as HeroSlide[];
 
     // Products for featured category sections (top-level categories only).
     const featured = categories.filter((c) =>

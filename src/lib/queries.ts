@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { unstable_cache } from "next/cache";
 import type { ProductListItem } from "./types";
 
 const PRODUCT_LIST_SELECT = `
@@ -192,48 +194,68 @@ export async function getVendorProducts(vendorId: string): Promise<ProductListIt
   return (data ?? []).map(toListItem);
 }
 
-export async function getCategories() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("categories")
-    .select("*")
-    .is("parent_id", null)
-    .order("sort_order");
-  return data ?? [];
-}
+// Lookup tables are public and rarely change — cache them across requests
+// so catalog pages don't hit the DB every render.
+export const getCategories = unstable_cache(
+  async () => {
+    const { data } = await createPublicClient()
+      .from("categories")
+      .select("*")
+      .is("parent_id", null)
+      .order("sort_order");
+    return data ?? [];
+  },
+  ["categories"],
+  { revalidate: 300, tags: ["categories"] },
+);
 
-export async function getVehicleMakes() {
-  const supabase = await createClient();
-  const { data } = await supabase.from("vehicle_makes").select("*").order("name");
-  return data ?? [];
-}
+export const getVehicleMakes = unstable_cache(
+  async () => {
+    const { data } = await createPublicClient()
+      .from("vehicle_makes")
+      .select("*")
+      .order("name");
+    return data ?? [];
+  },
+  ["vehicle-makes"],
+  { revalidate: 3600, tags: ["vehicle-taxonomy"] },
+);
 
-export async function getVehicleModels(makeId?: number) {
-  const supabase = await createClient();
-  let q = supabase.from("vehicle_models").select("*").order("name");
-  if (makeId) q = q.eq("make_id", makeId);
-  const { data } = await q;
-  return data ?? [];
-}
+export const getVehicleModels = unstable_cache(
+  async (makeId?: number) => {
+    let q = createPublicClient().from("vehicle_models").select("*").order("name");
+    if (makeId) q = q.eq("make_id", makeId);
+    const { data } = await q;
+    return data ?? [];
+  },
+  ["vehicle-models"],
+  { revalidate: 3600, tags: ["vehicle-taxonomy"] },
+);
 
-export async function getVehicleGenerations(modelId?: number) {
-  const supabase = await createClient();
-  let q = supabase
-    .from("vehicle_generations")
-    .select("*")
-    .order("year_start", { nullsFirst: false });
-  if (modelId) q = q.eq("model_id", modelId);
-  const { data } = await q;
-  return data ?? [];
-}
+export const getVehicleGenerations = unstable_cache(
+  async (modelId?: number) => {
+    let q = createPublicClient()
+      .from("vehicle_generations")
+      .select("*")
+      .order("year_start", { nullsFirst: false });
+    if (modelId) q = q.eq("model_id", modelId);
+    const { data } = await q;
+    return data ?? [];
+  },
+  ["vehicle-generations"],
+  { revalidate: 3600, tags: ["vehicle-taxonomy"] },
+);
 
-export async function getVehicleEngines(generationId?: number) {
-  const supabase = await createClient();
-  let q = supabase.from("vehicle_engines").select("*").order("name");
-  if (generationId) q = q.eq("generation_id", generationId);
-  const { data } = await q;
-  return data ?? [];
-}
+export const getVehicleEngines = unstable_cache(
+  async (generationId?: number) => {
+    let q = createPublicClient().from("vehicle_engines").select("*").order("name");
+    if (generationId) q = q.eq("generation_id", generationId);
+    const { data } = await q;
+    return data ?? [];
+  },
+  ["vehicle-engines"],
+  { revalidate: 3600, tags: ["vehicle-taxonomy"] },
+);
 
 // ---------------------------------------------------------------------------
 // Auth / roles
@@ -290,6 +312,19 @@ export async function getCustomerVehicles(userId: string) {
     .order("is_primary", { ascending: false });
   return data ?? [];
 }
+
+export const getHeroSlides = unstable_cache(
+  async () => {
+    const { data } = await createPublicClient()
+      .from("hero_slides")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order");
+    return data ?? [];
+  },
+  ["hero-slides"],
+  { revalidate: 300, tags: ["hero-slides"] },
+);
 
 /** "Verified near you" — recently Carguvi-confirmed products. */
 export async function getVerifiedProducts(limit = 8) {

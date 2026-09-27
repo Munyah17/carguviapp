@@ -345,11 +345,24 @@ export default async function SearchPage({
         <div className="mt-10 rounded-xl border border-dashed border-surface-300 bg-surface-50 p-10 text-center">
           <p className="font-medium text-ink-700">No parts found</p>
           <p className="mt-1 text-sm text-ink-500">
-            Try a different part name, remove filters, or{" "}
-            <Link href="/inquiries/new" className="text-brand-700 underline">
-              ask vendors
-            </Link>{" "}
-            to source it for you.
+            Try a different part name or remove filters.
+          </p>
+          <div className="mt-5 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
+            <Link
+              href={`/request-part${q ? `?part=${encodeURIComponent(q)}` : ""}`}
+              className="tap rounded-lg bg-brand-700 px-5 py-2.5 text-sm font-medium text-white"
+            >
+              Order it — we import from SA, Dubai &amp; China
+            </Link>
+            <Link
+              href="/inquiries/new"
+              className="tap rounded-lg border border-surface-300 px-5 py-2.5 text-sm font-medium text-ink-700"
+            >
+              Ask vendors to source it
+            </Link>
+          </div>
+          <p className="mt-3 text-xs text-ink-400">
+            Custom import quotations within 48 hours.
           </p>
         </div>
       ) : (

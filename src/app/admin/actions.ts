@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUserRoles } from "@/lib/queries";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Database } from "@/lib/database.types";
 
@@ -210,6 +210,7 @@ export async function saveHeroSlide(formData: FormData) {
     entity_id: id || null,
     new_state: { title: payload.title },
   });
+  revalidateTag("hero-slides", "max");
   revalidatePath("/admin/hero");
   revalidatePath("/");
 }
@@ -224,6 +225,52 @@ export async function deleteHeroSlide(id: string) {
     entity_type: "hero_slide",
     entity_id: id,
   });
+  revalidateTag("hero-slides", "max");
   revalidatePath("/admin/hero");
   revalidatePath("/");
+}
+
+export async function updateSourcingRequest(formData: FormData) {
+  const { user, admin } = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "requested") as any;
+  const quoteAmount = Number(formData.get("quote_amount")) || null;
+  const payload = {
+    status,
+    quote_amount: quoteAmount,
+    currency: String(formData.get("currency") ?? "USD"),
+    quote_timeline: String(formData.get("quote_timeline") ?? "") || null,
+    admin_notes: String(formData.get("admin_notes") ?? "") || null,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await admin
+    .from("sourcing_requests")
+    .update(payload)
+    .eq("id", id);
+  if (error) throw error;
+
+  // Notify the requester when a quote is issued.
+  const { data: req } = await admin
+    .from("sourcing_requests")
+    .select("user_id, part_name")
+    .eq("id", id)
+    .single();
+  if (status === "quoted" && req?.user_id) {
+    await admin.from("notifications").insert({
+      user_id: req.user_id,
+      type: "sourcing_quote",
+      title: "Your quote is ready",
+      body: `${req.part_name}: ${payload.currency} ${quoteAmount} — ${payload.quote_timeline ?? "timeline on request"}.`,
+      data: { sourcing_request_id: id },
+    });
+  }
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_role: "admin",
+    action: "sourcing_request_updated",
+    entity_type: "sourcing_request",
+    entity_id: id,
+    new_state: payload,
+  });
+  revalidatePath("/admin/sourcing");
 }

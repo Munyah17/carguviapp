@@ -1422,6 +1422,77 @@ export type Database = {
           },
         ]
       }
+      sourcing_requests: {
+        Row: {
+          admin_notes: string | null
+          condition_pref: string
+          contact: string
+          created_at: string
+          currency: string
+          id: string
+          name: string | null
+          notes: string | null
+          part_name: string
+          part_number: string | null
+          quantity: number
+          quote_amount: number | null
+          quote_timeline: string | null
+          source_pref: string | null
+          status: Database["public"]["Enums"]["sourcing_status"]
+          updated_at: string
+          user_id: string | null
+          vehicle_description: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          condition_pref?: string
+          contact: string
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          part_name: string
+          part_number?: string | null
+          quantity?: number
+          quote_amount?: number | null
+          quote_timeline?: string | null
+          source_pref?: string | null
+          status?: Database["public"]["Enums"]["sourcing_status"]
+          updated_at?: string
+          user_id?: string | null
+          vehicle_description?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          condition_pref?: string
+          contact?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          part_name?: string
+          part_number?: string | null
+          quantity?: number
+          quote_amount?: number | null
+          quote_timeline?: string | null
+          source_pref?: string | null
+          status?: Database["public"]["Enums"]["sourcing_status"]
+          updated_at?: string
+          user_id?: string | null
+          vehicle_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sourcing_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2038,6 +2109,16 @@ export type Database = {
         | "failed"
         | "refunded"
       product_condition: "new" | "used" | "refurbished"
+      sourcing_status:
+        | "requested"
+        | "quoting"
+        | "quoted"
+        | "accepted"
+        | "ordered"
+        | "in_transit"
+        | "arrived"
+        | "completed"
+        | "cancelled"
       vendor_order_status:
         | "pending_payment"
         | "paid"
@@ -2266,6 +2347,17 @@ export const Constants = {
         "refunded",
       ],
       product_condition: ["new", "used", "refurbished"],
+      sourcing_status: [
+        "requested",
+        "quoting",
+        "quoted",
+        "accepted",
+        "ordered",
+        "in_transit",
+        "arrived",
+        "completed",
+        "cancelled",
+      ],
       vendor_order_status: [
         "pending_payment",
         "paid",

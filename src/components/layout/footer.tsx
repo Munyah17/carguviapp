@@ -8,7 +8,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: "/search", label: "Search parts" },
       { href: "/categories", label: "All categories" },
       { href: "/garage", label: "My garage" },
-      { href: "/inquiries/new", label: "Request a part" },
+      { href: "/request-part", label: "Request a part" },
     ],
   },
   {
@@ -94,7 +94,6 @@ export function Footer() {
             © {new Date().getFullYear()} Carguvi. Harare, Zimbabwe. Developed
             and Powered By Global Space Web.
           </a>
-          <p>Parts, verified.</p>
         </div>
       </div>
     </footer>
