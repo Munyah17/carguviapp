@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "@/lib/database.types";
+import { isSupabaseConfigured, SupabaseNotConfiguredError } from "@/lib/env";
 
 export async function createClient() {
+  if (!isSupabaseConfigured()) throw new SupabaseNotConfiguredError();
   const cookieStore = await cookies();
 
   return createServerClient<Database>(

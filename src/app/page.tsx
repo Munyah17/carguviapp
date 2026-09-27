@@ -14,21 +14,29 @@ import {
   IconShield,
 } from "@/components/ui/icons";
 import { ButtonLink } from "@/components/ui/button";
+import { isSupabaseConfigured } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const configured = isSupabaseConfigured();
+  let user = null;
+  let categories: any[] = [];
+  let verified: any[] = [];
+  let popular: string[] = [];
+  let vehicles: any[] = [];
 
-  const [categories, verified, popular, vehicles] = await Promise.all([
-    getCategories(),
-    getVerifiedProducts(8),
-    getPopularSearches(),
-    user ? getCustomerVehicles(user.id) : Promise.resolve([]),
-  ]);
+  if (configured) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+    [categories, verified, popular, vehicles] = await Promise.all([
+      getCategories(),
+      getVerifiedProducts(8),
+      getPopularSearches(),
+      user ? getCustomerVehicles(user.id) : Promise.resolve([]),
+    ]);
+  }
 
   const primaryVehicle = vehicles.find((v: any) => v.is_primary) ?? vehicles[0];
 
@@ -106,6 +114,13 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {!configured ? (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Carguvi is live, but the marketplace database isn&apos;t connected yet.
+          Set the Supabase environment variables to enable search and ordering.
+        </div>
+      ) : null}
 
       {/* Categories */}
       <section className="py-6">

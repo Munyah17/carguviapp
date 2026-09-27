@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/env";
 import { IconCart, IconSearch, IconUser } from "@/components/ui/icons";
 
 export function Logo({ className = "h-7" }: { className?: string }) {
@@ -20,10 +21,12 @@ export function Logo({ className = "h-7" }: { className?: string }) {
 }
 
 export async function Header() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-200 bg-white">
