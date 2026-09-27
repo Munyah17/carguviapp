@@ -401,6 +401,53 @@ export async function applyToSell(_prev: VendorActionState, formData: FormData) 
   redirect("/vendor");
 }
 
+export async function updateVendorProfile(
+  _prev: VendorActionState,
+  formData: FormData,
+) {
+  const { supabase, vendor } = await requireVendor();
+  const { error } = await supabase
+    .from("vendors")
+    .update({
+      business_name: String(formData.get("business_name") ?? vendor.business_name),
+      description: String(formData.get("description") ?? "") || null,
+      phone: String(formData.get("phone") ?? "") || null,
+      whatsapp: String(formData.get("whatsapp") ?? "") || null,
+      email: String(formData.get("email") ?? "") || null,
+      operating_area: String(formData.get("operating_area") ?? "") || null,
+      city: String(formData.get("city") ?? "Harare"),
+      payment_details: {
+        ecocash: String(formData.get("ecocash") ?? "") || undefined,
+        bank: String(formData.get("bank") ?? "") || undefined,
+        innbucks: String(formData.get("innbucks") ?? "") || undefined,
+      },
+    })
+    .eq("id", vendor.id);
+  if (error) return { error: error.message };
+  revalidatePath("/vendor/settings");
+  return { ok: true };
+}
+
+export async function savePickupLocation(formData: FormData) {
+  const { supabase, vendor } = await requireVendor();
+  const id = String(formData.get("location_id") ?? "") || null;
+  const payload = {
+    vendor_id: vendor.id,
+    name: String(formData.get("name") ?? "Main shop"),
+    address: String(formData.get("address") ?? ""),
+    area: String(formData.get("area") ?? "") || null,
+    pickup_available: formData.get("pickup_available") === "on",
+    pickup_instructions:
+      String(formData.get("pickup_instructions") ?? "") || null,
+    delivery_available: formData.get("delivery_available") === "on",
+  };
+  const { error } = id
+    ? await supabase.from("vendor_locations").update(payload).eq("id", id).eq("vendor_id", vendor.id)
+    : await supabase.from("vendor_locations").insert(payload);
+  if (error) throw error;
+  revalidatePath("/vendor/settings");
+}
+
 export async function addStaffMember(formData: FormData) {
   const { vendor } = await requireVendor();
   const admin = createAdminClient();

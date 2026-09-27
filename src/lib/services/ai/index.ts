@@ -25,6 +25,8 @@ export interface SearchInterpretation {
 export interface AIProvider {
   readonly name: string;
   interpretSearch(query: string): Promise<SearchInterpretation>;
+  /** Identify a part from a photo. Returns null when unsupported. */
+  interpretPartPhoto(imageDataUrl: string): Promise<SearchInterpretation | null>;
   generateReminderCopy(input: {
     vendorName: string;
     listings: { title: string; daysStale: number }[];
@@ -82,6 +84,45 @@ class GroqProvider implements AIProvider {
     }
   }
 
+  async interpretPartPhoto(
+    imageDataUrl: string,
+  ): Promise<SearchInterpretation | null> {
+    const visionModel =
+      process.env.GROQ_VISION_MODEL ??
+      "meta-llama/llama-4-scout-17b-16e-instruct";
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: visionModel,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Identify this vehicle part for a marketplace search. Return ONLY JSON {"keywords": string[], "categoryGuess"?: string, "partName"?: string, "makeGuess"?: string, "modelGuess"?: string}. If it is not a vehicle part, return {"keywords": [], "error": "not_a_part"}.`,
+              },
+              { type: "image_url", image_url: { url: imageDataUrl } },
+            ],
+          },
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" },
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    try {
+      return JSON.parse(data.choices?.[0]?.message?.content ?? "null");
+    } catch {
+      return null;
+    }
+  }
+
   async generateReminderCopy(input: {
     vendorName: string;
     listings: { title: string; daysStale: number }[];
@@ -130,6 +171,9 @@ function fallbackReminder(input: {
 /** Deterministic heuristic interpretation when no AI key is configured. */
 class FallbackProvider implements AIProvider {
   readonly name = "fallback";
+  async interpretPartPhoto(): Promise<SearchInterpretation | null> {
+    return null;
+  }
   async interpretSearch(query: string): Promise<SearchInterpretation> {
     const lower = query.toLowerCase();
     const words = lower.split(/\s+/).filter(Boolean);

@@ -10,6 +10,7 @@ const items = [
   { href: "/vendor/orders", label: "Orders" },
   { href: "/vendor/confirmations", label: "Confirmations" },
   { href: "/vendor/staff", label: "Staff" },
+  { href: "/vendor/settings", label: "Settings" },
 ];
 
 export function VendorNav() {

@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/product/product-card";
 import { IconSearch, IconShield } from "@/components/ui/icons";
 import { signalDemand } from "@/lib/services/demand";
 import { getAIProvider } from "@/lib/services/ai";
+import { PhotoSearchButton } from "./photo-search";
 
 export const dynamic = "force-dynamic";
 
@@ -131,24 +132,27 @@ export default async function SearchPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-4">
       {/* Search bar */}
-      <form action="/search" className="flex gap-2">
-        <div className="relative flex-1">
-          <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-          <input
-            type="search"
-            name="q"
-            defaultValue={q}
-            placeholder="Part name, number or vehicle…"
-            className="h-11 w-full rounded-xl border border-surface-300 bg-white pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-          />
-        </div>
-        <button
-          type="submit"
-          className="tap h-11 rounded-xl bg-brand-700 px-4 text-sm font-medium text-white"
-        >
-          Search
-        </button>
-      </form>
+      <div className="flex gap-2">
+        <form action="/search" className="flex flex-1 gap-2">
+          <div className="relative flex-1">
+            <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input
+              type="search"
+              name="q"
+              defaultValue={q}
+              placeholder="Part name, number or vehicle…"
+              className="h-11 w-full rounded-xl border border-surface-300 bg-white pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+          <button
+            type="submit"
+            className="tap h-11 rounded-xl bg-brand-700 px-4 text-sm font-medium text-white"
+          >
+            Search
+          </button>
+        </form>
+        <PhotoSearchButton />
+      </div>
 
       {/* Filters */}
       <details className="mt-3 rounded-xl border border-surface-200 bg-white">
