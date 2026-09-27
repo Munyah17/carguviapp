@@ -430,3 +430,20 @@ insert into public.platform_settings (key, value) values
   ('freshness', '{"carguvi_fresh_days": 7, "seller_fresh_days": 14, "stale_days": 21}'),
   ('reminders', '{"max_listings_per_reminder": 3}')
 on conflict do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Hero slides (admin-manageable landing banners)
+-- ---------------------------------------------------------------------------
+
+insert into public.hero_slides (title, description, image_url, overlay_opacity, cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href, sort_order) values
+  ('Find the part. Trust the source.', 'Verified vehicle parts from Kaguvi Street vendors — confirmed by Carguvi field agents, not just listings.', '/images/hero/hero-1.svg', 72, 'Search parts', '/search', 'Sell on Carguvi', '/vendor/apply', 1),
+  ('Mazda Demio engines in stock', 'New shape 1.3 petrol engines from $1,750 — availability confirmed by sellers this week.', '/images/hero/hero-2.svg', 70, 'View engines', '/search?q=demio+engine', 'All listings', '/search', 2),
+  ('Every listing, freshness-stamped', 'See exactly when stock was last confirmed — by the seller or by a Carguvi verifier.', '/images/hero/hero-3.svg', 68, 'How it works', '/search', 'Browse verified', '/search?verified=1', 3),
+  ('Carguvi Delivery across Harare', 'Order parts to your door — same-day delivery inside Harare, tracked end to end.', '/images/hero/hero-4.svg', 72, 'Order now', '/search', 'Delivery info', '/search', 4),
+  ('Suspension & brakes that fit', 'Shocks, pads and bearings matched to your exact vehicle — use your garage for fitment.', '/images/hero/hero-5.svg', 70, 'Add your vehicle', '/garage', 'Shop suspension', '/search?q=suspension', 5),
+  ('Vendor storefronts you can trust', 'Rated vendors, verified locations, real stock. Browse shops on Kaguvi Street.', '/images/hero/hero-6.svg', 72, 'Browse vendors', '/categories', 'Become a seller', '/vendor/apply', 6),
+  ('Batteries, alternators, starters', 'Electrical parts tested and confirmed — from Kaguvi Street to your driveway.', '/images/hero/hero-7.svg', 70, 'Shop electrical', '/search?q=battery', 'Search parts', '/search', 7),
+  ('Gearboxes & transmissions', 'Manual and automatic gearboxes with warranty options from trusted breakers.', '/images/hero/hero-8.svg', 72, 'Find gearboxes', '/search?q=gearbox', 'All listings', '/search', 8),
+  ('Can''t find it? We''ll source it', 'Send an inquiry to verified vendors — the whole street searches for you.', '/images/hero/hero-9.svg', 68, 'Request a part', '/inquiries/new', 'Learn more', '/search', 9),
+  ('Verified by Carguvi agents', 'Our physical verification network checks stock on the ground so you never chase ghosts.', '/images/hero/hero-10.svg', 75, 'Shop verified', '/search?verified=1', 'Read about us', '/', 10)
+on conflict do nothing;

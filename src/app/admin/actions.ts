@@ -179,3 +179,51 @@ export async function grantRole(formData: FormData) {
   });
   revalidatePath("/admin/system");
 }
+
+export async function saveHeroSlide(formData: FormData) {
+  const { user, admin } = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const payload = {
+    title: String(formData.get("title") ?? "").trim(),
+    description: String(formData.get("description") ?? "") || null,
+    image_url: String(formData.get("image_url") ?? "") || null,
+    overlay_opacity: Math.min(95, Math.max(0, Number(formData.get("overlay_opacity")) || 70)),
+    cta_primary_label: String(formData.get("cta_primary_label") ?? "") || null,
+    cta_primary_href: String(formData.get("cta_primary_href") ?? "") || null,
+    cta_secondary_label: String(formData.get("cta_secondary_label") ?? "") || null,
+    cta_secondary_href: String(formData.get("cta_secondary_href") ?? "") || null,
+    sort_order: Number(formData.get("sort_order")) || 0,
+    is_active: formData.get("is_active") === "on",
+    updated_at: new Date().toISOString(),
+  };
+  if (!payload.title) throw new Error("Title is required");
+  const q = id
+    ? admin.from("hero_slides").update(payload).eq("id", id)
+    : admin.from("hero_slides").insert(payload);
+  const { error } = await q;
+  if (error) throw error;
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_role: "admin",
+    action: id ? "hero_slide_updated" : "hero_slide_created",
+    entity_type: "hero_slide",
+    entity_id: id || null,
+    new_state: { title: payload.title },
+  });
+  revalidatePath("/admin/hero");
+  revalidatePath("/");
+}
+
+export async function deleteHeroSlide(id: string) {
+  const { user, admin } = await requireAdmin();
+  await admin.from("hero_slides").delete().eq("id", id);
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_role: "admin",
+    action: "hero_slide_deleted",
+    entity_type: "hero_slide",
+    entity_id: id,
+  });
+  revalidatePath("/admin/hero");
+  revalidatePath("/");
+}

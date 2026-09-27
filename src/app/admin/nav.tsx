@@ -13,6 +13,7 @@ export function AdminNav({ isSuper }: { isSuper: boolean }) {
     { href: "/admin/verification", label: "Verification" },
     { href: "/admin/disputes", label: "Disputes" },
     { href: "/admin/orders", label: "Orders" },
+    { href: "/admin/hero", label: "Hero" },
     ...(isSuper ? [{ href: "/admin/system", label: "System" }] : []),
   ];
   return (

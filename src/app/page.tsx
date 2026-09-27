@@ -5,18 +5,24 @@ import {
   getCustomerVehicles,
   getPopularSearches,
   getVerifiedProducts,
+  searchProducts,
 } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
+import { HeroSlider, type HeroSlide } from "@/components/home/hero-slider";
 import {
   IconCar,
   IconChevronRight,
   IconSearch,
   IconShield,
+  IconTruck,
 } from "@/components/ui/icons";
 import { ButtonLink } from "@/components/ui/button";
 import { isSupabaseConfigured } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
+
+// Top-level category slugs worth featuring as their own sections.
+const FEATURED_SLUGS = ["engines", "gearboxes", "suspension", "brakes", "electrical"];
 
 export default async function HomePage() {
   const configured = isSupabaseConfigured();
@@ -25,170 +31,275 @@ export default async function HomePage() {
   let verified: any[] = [];
   let popular: string[] = [];
   let vehicles: any[] = [];
+  let slides: HeroSlide[] = [];
+  let featuredSections: { category: any; products: any[] }[] = [];
 
   if (configured) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
     user = data.user;
-    [categories, verified, popular, vehicles] = await Promise.all([
+    const [cats, ver, pop, veh, slideRes] = await Promise.all([
       getCategories(),
       getVerifiedProducts(8),
       getPopularSearches(),
       user ? getCustomerVehicles(user.id) : Promise.resolve([]),
+      supabase
+        .from("hero_slides")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order"),
     ]);
+    categories = cats;
+    verified = ver;
+    popular = pop;
+    vehicles = veh;
+    slides = (slideRes.data ?? []) as HeroSlide[];
+
+    // Products for featured category sections (top-level categories only).
+    const featured = categories.filter((c) =>
+      FEATURED_SLUGS.includes(c.slug),
+    );
+    featuredSections = (
+      await Promise.all(
+        featured.map(async (c) => ({
+          category: c,
+          products: await searchProducts({ categoryId: c.id }),
+        })),
+      )
+    ).filter((s) => s.products.length > 0);
   }
 
   const primaryVehicle = vehicles.find((v: any) => v.is_primary) ?? vehicles[0];
 
   return (
-    <div className="mx-auto max-w-6xl px-4">
-      {/* Hero */}
-      <section className="border-b border-surface-200 py-8 sm:py-12">
-        <h1 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-          What part are you looking for?
-        </h1>
-        <p className="mt-1 text-sm text-ink-500">
-          Search Harare&apos;s parts network. See real availability, confirmed by
-          Carguvi.
-        </p>
-        <form action="/search" className="mt-4 flex gap-2">
-          <div className="relative flex-1">
-            <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-            <input
-              type="search"
-              name="q"
-              placeholder="e.g. Mazda Demio new shape petrol engine"
-              className="h-12 w-full rounded-xl border border-surface-300 bg-white pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-            />
-          </div>
-          <button
-            type="submit"
-            className="tap h-12 rounded-xl bg-brand-700 px-5 text-sm font-medium text-white hover:bg-brand-800"
+    <div>
+      {/* Hero carousel — content managed in Admin → Hero */}
+      <HeroSlider slides={slides} />
+
+      {/* Search — directly under the hero */}
+      <div className="mx-auto max-w-6xl px-4">
+        <section className="-mt-8 relative z-10">
+          <form
+            action="/search"
+            className="flex gap-2 rounded-2xl border border-surface-200 bg-white p-2 shadow-lg"
           >
-            Search
-          </button>
-        </form>
+            <div className="relative flex-1">
+              <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <input
+                type="search"
+                name="q"
+                placeholder="e.g. Mazda Demio new shape petrol engine"
+                className="h-12 w-full rounded-xl bg-surface-50 pl-9 pr-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200"
+              />
+            </div>
+            <button
+              type="submit"
+              className="tap h-12 rounded-xl bg-brand-700 px-5 text-sm font-medium text-white hover:bg-brand-800"
+            >
+              Search
+            </button>
+          </form>
+        </section>
 
         {/* My Vehicle */}
-        {primaryVehicle ? (
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-brand-700">
-              <IconCar className="h-5 w-5" />
+        {configured ? (
+          primaryVehicle ? (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-brand-700">
+                <IconCar className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-brand-600">
+                  My vehicle
+                </p>
+                <p className="truncate text-sm font-semibold text-ink-900">
+                  {primaryVehicle.vehicle_makes?.name}{" "}
+                  {primaryVehicle.vehicle_models?.name}
+                  {primaryVehicle.vehicle_generations?.name
+                    ? ` • ${primaryVehicle.vehicle_generations.name}`
+                    : ""}
+                  {primaryVehicle.vehicle_engines?.name
+                    ? ` • ${primaryVehicle.vehicle_engines.name}`
+                    : ""}
+                </p>
+              </div>
+              <ButtonLink
+                href={`/search?generation_id=${primaryVehicle.generation_id ?? ""}&engine_id=${primaryVehicle.engine_id ?? ""}`}
+                variant="outline"
+                size="sm"
+              >
+                Find parts
+              </ButtonLink>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-brand-600">
-                My vehicle
-              </p>
-              <p className="truncate text-sm font-semibold text-ink-900">
-                {primaryVehicle.vehicle_makes?.name}{" "}
-                {primaryVehicle.vehicle_models?.name}
-                {primaryVehicle.vehicle_generations?.name
-                  ? ` • ${primaryVehicle.vehicle_generations.name}`
-                  : ""}
-                {primaryVehicle.vehicle_engines?.name
-                  ? ` • ${primaryVehicle.vehicle_engines.name}`
-                  : ""}
-              </p>
+          ) : (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-dashed border-surface-300 bg-surface-50 p-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-ink-400">
+                <IconCar className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-ink-700">
+                  Add your vehicle for exact-fit results
+                </p>
+              </div>
+              <ButtonLink href="/garage" variant="outline" size="sm">
+                Add vehicle
+              </ButtonLink>
             </div>
-            <ButtonLink
-              href={`/search?generation_id=${primaryVehicle.generation_id ?? ""}&engine_id=${primaryVehicle.engine_id ?? ""}`}
-              variant="outline"
-              size="sm"
-            >
-              Find parts
-            </ButtonLink>
-          </div>
+          )
         ) : (
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-dashed border-surface-300 bg-surface-50 p-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-ink-400">
-              <IconCar className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-ink-700">
-                Add your vehicle for exact-fit results
-              </p>
-            </div>
-            <ButtonLink href="/garage" variant="outline" size="sm">
-              Add vehicle
-            </ButtonLink>
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            Carguvi is live, but the marketplace database isn&apos;t connected
+            yet. Set the Supabase environment variables to enable search and
+            ordering.
           </div>
         )}
-      </section>
 
-      {!configured ? (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          Carguvi is live, but the marketplace database isn&apos;t connected yet.
-          Set the Supabase environment variables to enable search and ordering.
-        </div>
-      ) : null}
-
-      {/* Categories */}
-      <section className="py-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-ink-900">Categories</h2>
-          <Link
-            href="/categories"
-            className="tap flex items-center text-sm font-medium text-brand-700"
-          >
-            All <IconChevronRight className="h-4 w-4" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
-          {categories.slice(0, 10).map((c: any) => (
-            <Link
-              key={c.id}
-              href={`/search?category_id=${c.id}`}
-              className="tap flex flex-col items-center gap-1.5 rounded-xl border border-surface-200 bg-white px-1 py-3 text-center hover:border-brand-200 hover:bg-brand-50"
+        {/* Trust strip */}
+        <section className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {[
+            {
+              icon: IconShield,
+              title: "Carguvi confirmed",
+              body: "Field agents physically verify stock on Kaguvi Street.",
+            },
+            {
+              icon: IconTruck,
+              title: "Pickup or delivery",
+              body: "Collect at the vendor or get it delivered in Harare.",
+            },
+            {
+              icon: IconCar,
+              title: "Exact-fit search",
+              body: "Filter by make, model, generation and engine.",
+            },
+          ].map((f) => (
+            <div
+              key={f.title}
+              className="flex items-center gap-3 rounded-xl border border-surface-200 bg-white p-3"
             >
-              <CategoryGlyph slug={c.slug} />
-              <span className="text-[11px] font-medium leading-tight text-ink-700">
-                {c.name}
-              </span>
-            </Link>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+                <f.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-ink-900">{f.title}</p>
+                <p className="text-xs leading-snug text-ink-500">{f.body}</p>
+              </div>
+            </div>
           ))}
-        </div>
-      </section>
+        </section>
 
-      {/* Popular searches */}
-      {popular.length > 0 ? (
-        <section className="pb-6">
-          <h2 className="mb-3 text-base font-semibold text-ink-900">
-            Popular searches
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {popular.map((q) => (
+        {/* Categories */}
+        <section className="py-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-ink-900">
+              Shop by category
+            </h2>
+            <Link
+              href="/categories"
+              className="tap flex items-center text-sm font-medium text-brand-700"
+            >
+              All <IconChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+            {categories.slice(0, 10).map((c: any) => (
               <Link
-                key={q}
-                href={`/search?q=${encodeURIComponent(q)}`}
-                className="tap rounded-full border border-surface-300 bg-surface-50 px-3 py-1.5 text-sm text-ink-700 hover:border-brand-300 hover:bg-brand-50"
+                key={c.id}
+                href={`/search?category_id=${c.id}`}
+                className="tap flex flex-col items-center gap-1.5 rounded-xl border border-surface-200 bg-white px-1 py-3 text-center hover:border-brand-200 hover:bg-brand-50"
               >
-                {q}
+                <CategoryGlyph slug={c.slug} />
+                <span className="text-[11px] font-medium leading-tight text-ink-700">
+                  {c.name}
+                </span>
               </Link>
             ))}
           </div>
         </section>
-      ) : null}
 
-      {/* Verified near you */}
-      <section className="pb-10">
-        <div className="mb-3 flex items-center gap-2">
-          <IconShield className="h-4 w-4 text-brand-600" />
-          <h2 className="text-base font-semibold text-ink-900">
-            Verified near you
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {verified.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      </section>
+        {/* Popular searches */}
+        {popular.length > 0 ? (
+          <section className="pb-6">
+            <h2 className="mb-3 text-base font-semibold text-ink-900">
+              Popular searches
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {popular.map((q) => (
+                <Link
+                  key={q}
+                  href={`/search?q=${encodeURIComponent(q)}`}
+                  className="tap rounded-full border border-surface-300 bg-surface-50 px-3 py-1.5 text-sm text-ink-700 hover:border-brand-300 hover:bg-brand-50"
+                >
+                  {q}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {/* Featured category sections */}
+        {featuredSections.map(({ category, products }) => (
+          <section key={category.id} className="pb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-ink-900">
+                {category.name}
+              </h2>
+              <Link
+                href={`/search?category_id=${category.id}`}
+                className="tap flex items-center text-sm font-medium text-brand-700"
+              >
+                See all <IconChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {products.slice(0, 4).map((p: any) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {/* Verified near you */}
+        {verified.length > 0 ? (
+          <section className="pb-10">
+            <div className="mb-3 flex items-center gap-2">
+              <IconShield className="h-4 w-4 text-brand-600" />
+              <h2 className="text-base font-semibold text-ink-900">
+                Verified near you
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {verified.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {/* Vendor CTA */}
+        <section className="mb-10 overflow-hidden rounded-2xl bg-gradient-to-br from-ink-900 to-brand-900 p-6 text-white sm:p-8">
+          <h2 className="text-xl font-bold">Got parts on Kaguvi Street?</h2>
+          <p className="mt-1 max-w-md text-sm text-white/80">
+            Reach buyers across Zimbabwe. List stock, confirm availability in
+            one tap, get paid on delivery.
+          </p>
+          <div className="mt-4 flex gap-3">
+            <ButtonLink href="/vendor/apply">Start selling</ButtonLink>
+            <ButtonLink
+              href="/search?verified=1"
+              variant="ghost"
+              className="border border-white/30 text-white hover:bg-white/10"
+            >
+              Browse verified parts
+            </ButtonLink>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
 
 function CategoryGlyph({ slug }: { slug: string }) {
-  // Simple monochrome automotive glyphs keyed by category slug.
   const cls = "h-6 w-6 text-brand-700";
   const paths: Record<string, React.ReactNode> = {
     engines: (
