@@ -4,7 +4,7 @@ import { getVendorForUser } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { addStaffMember } from "../actions";
+import { addStaffMember, setStaffActive } from "../actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Staff" };
@@ -63,6 +63,18 @@ export default async function VendorStaffPage() {
                 {!s.is_active ? <Badge tone="red">inactive</Badge> : null}
               </div>
             </div>
+            {isOwner && s.staff_role !== "owner" ? (
+              <form
+                action={async () => {
+                  "use server";
+                  await setStaffActive(s.id, !s.is_active);
+                }}
+              >
+                <button className="tap rounded-lg border border-surface-300 px-3 py-1.5 text-xs font-medium text-ink-700">
+                  {s.is_active ? "Deactivate" : "Reactivate"}
+                </button>
+              </form>
+            ) : null}
           </li>
         ))}
         {!staff?.length ? (

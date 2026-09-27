@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { daysSince } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin" };
@@ -17,6 +18,7 @@ export default async function AdminOverview() {
     { data: staleProducts },
     { data: openTasks },
     { data: flaggedVerifications },
+    { data: zeroResultSearches },
   ] = await Promise.all([
     supabase.from("vendors").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("vendors").select("id", { count: "exact", head: true }),
@@ -35,6 +37,12 @@ export default async function AdminOverview() {
       .from("carguvi_verifications")
       .select("id")
       .or("price_discrepancy.eq.true,availability_discrepancy.eq.true"),
+    supabase
+      .from("search_events")
+      .select("query")
+      .eq("results_count", 0)
+      .order("created_at", { ascending: false })
+      .limit(200),
   ]);
 
   const stale = (staleProducts ?? []).filter((p: any) => {
@@ -78,6 +86,38 @@ export default async function AdminOverview() {
           </Link>
         ))}
       </div>
+
+      {/* Unmet demand: searches that returned nothing */}
+      {(() => {
+        const freq = new Map<string, number>();
+        for (const s of zeroResultSearches ?? []) {
+          const q = (s.query ?? "").trim().toLowerCase();
+          if (!q) continue;
+          freq.set(q, (freq.get(q) ?? 0) + 1);
+        }
+        const top = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+        return top.length ? (
+          <section className="mt-6 rounded-xl border border-surface-200 bg-white p-4">
+            <h2 className="font-semibold text-ink-900">
+              Unmet demand
+              <span className="ml-2 text-xs font-normal text-ink-400">
+                searches with no results — sourcing opportunities
+              </span>
+            </h2>
+            <ul className="mt-2 divide-y divide-surface-100">
+              {top.map(([q, n]) => (
+                <li
+                  key={q}
+                  className="flex items-center justify-between py-2 text-sm"
+                >
+                  <span className="text-ink-700">{q}</span>
+                  <Badge tone="amber">{n}×</Badge>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null;
+      })()}
     </div>
   );
 }

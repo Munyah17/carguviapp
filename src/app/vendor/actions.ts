@@ -467,6 +467,27 @@ export async function savePickupLocation(formData: FormData) {
   revalidatePath("/vendor/settings");
 }
 
+export async function setStaffActive(staffId: string, active: boolean) {
+  const { supabase, user, vendor, staffRole } = await requireVendor();
+  if (staffRole !== "owner") return;
+  const { error } = await supabase
+    .from("vendor_staff")
+    .update({ is_active: active })
+    .eq("id", staffId)
+    .eq("vendor_id", vendor.id);
+  if (error) throw error;
+  const admin = createAdminClient();
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_role: "vendor",
+    action: active ? "staff_activated" : "staff_deactivated",
+    entity_type: "vendor_staff",
+    entity_id: staffId,
+    new_state: { is_active: active },
+  });
+  revalidatePath("/vendor/staff");
+}
+
 export async function addStaffMember(formData: FormData) {
   const { vendor } = await requireVendor();
   const admin = createAdminClient();

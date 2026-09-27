@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
-import { daysSince } from "@/lib/format";
+import { daysSince, formatPrice } from "@/lib/format";
 import { ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,6 +17,24 @@ import {
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Vendor dashboard" };
+
+function greeting(): string {
+  const h = new Date().getHours();
+  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+}
+
+async function getRecentSalesTotals(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  vendorId: string,
+) {
+  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+  return supabase
+    .from("vendor_orders")
+    .select("subtotal")
+    .eq("vendor_id", vendorId)
+    .eq("status", "completed")
+    .gte("updated_at", since);
+}
 
 export default async function VendorDashboard() {
   const supabase = await createClient();
@@ -49,6 +67,7 @@ export default async function VendorDashboard() {
     { data: inquiries },
     { data: metrics },
     { count: salesCount },
+    { data: recentSales },
   ] = await Promise.all([
     supabase
       .from("products")
@@ -75,6 +94,7 @@ export default async function VendorDashboard() {
       .select("id", { count: "exact", head: true })
       .eq("vendor_id", vendor.id)
       .eq("status", "completed"),
+    getRecentSalesTotals(supabase, vendor.id),
   ]);
 
   const stale = (products ?? []).filter((p: any) => {
@@ -89,19 +109,14 @@ export default async function VendorDashboard() {
     (p: any) => p.availability === "out_of_stock",
   );
 
-  const greeting =
-    new Date().getHours() < 12
-      ? "Good morning"
-      : new Date().getHours() < 17
-        ? "Good afternoon"
-        : "Good evening";
+  const greet = greeting();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-ink-900">
-            {greeting}, {vendor.business_name}
+            {greet}, {vendor.business_name}
           </h1>
           <p className="mt-0.5 flex items-center gap-2 text-sm text-ink-500">
             {vendor.operating_area ?? vendor.city}
@@ -138,10 +153,28 @@ export default async function VendorDashboard() {
           tone={inquiries?.length ? "blue" : "gray"}
         />
         <StatCard
-          href="/vendor/products"
+          href="/vendor/orders"
           count={salesCount ?? 0}
           label="Orders completed"
         />
+      </div>
+
+      {/* Earnings */}
+      <div className="mt-3 rounded-xl border border-surface-200 bg-white p-4">
+        <p className="text-xs font-medium text-ink-500">
+          Sales last 30 days (before Carguvi fees)
+        </p>
+        <p className="mt-0.5 text-2xl font-bold text-ink-900">
+          {formatPrice(
+            (recentSales ?? []).reduce(
+              (s: number, o: any) => s + Number(o.subtotal ?? 0),
+              0,
+            ),
+          )}
+        </p>
+        <p className="mt-1 text-xs text-ink-400">
+          Payouts are remitted to your configured EcoCash/bank details weekly.
+        </p>
       </div>
 
       {stale.length > 0 ? (
