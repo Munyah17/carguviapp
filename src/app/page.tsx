@@ -198,7 +198,7 @@ export default async function HomePage() {
               All <IconChevronRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-10">
             {categories.slice(0, 10).map((c: any) => (
               <Link
                 key={c.id}
@@ -248,9 +248,9 @@ export default async function HomePage() {
                 See all <IconChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
               {products.slice(0, 4).map((p: any) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} grid />
               ))}
             </div>
           </section>
@@ -265,9 +265,9 @@ export default async function HomePage() {
                 Verified near you
               </h2>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
               {verified.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} grid />
               ))}
             </div>
           </section>
@@ -280,7 +280,7 @@ export default async function HomePage() {
             Reach buyers across Zimbabwe. List stock, confirm availability in
             one tap, get paid on delivery.
           </p>
-          <div className="mt-4 flex gap-3">
+          <div className="mt-4 flex flex-wrap gap-3">
             <ButtonLink href="/vendor/apply">Start selling</ButtonLink>
             <ButtonLink
               href="/search?verified=1"

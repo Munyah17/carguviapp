@@ -105,7 +105,8 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       })}
 
       {/* Dots */}
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
+      {/* Raised on mobile so the overlapping search card doesn't cover them */}
+      <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 gap-1.5 sm:bottom-4">
         {slides.map((_, i) => (
           <button
             key={i}

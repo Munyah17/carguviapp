@@ -19,14 +19,33 @@ const availabilityLabel: Record<string, string> = {
   unknown: "Check availability",
 };
 
-export function ProductCard({ product }: { product: ProductListItem }) {
+export function ProductCard({
+  product,
+  grid = false,
+}: {
+  product: ProductListItem;
+  /** Render as a vertical grid tile even on mobile (for multi-col grids). */
+  grid?: boolean;
+}) {
   const outOfStock = ["out_of_stock"].includes(product.availability);
   return (
     <Link
       href={`/products/${product.id}`}
-      className="tap flex gap-3 rounded-xl border border-surface-200 bg-white p-3 transition-shadow hover:shadow-sm sm:flex-col sm:gap-0 sm:p-0 sm:overflow-hidden"
+      className={cn(
+        "tap flex rounded-xl border border-surface-200 bg-white transition-shadow hover:shadow-sm",
+        grid
+          ? "flex-col overflow-hidden"
+          : "gap-3 p-3 sm:flex-col sm:gap-0 sm:p-0 sm:overflow-hidden",
+      )}
     >
-      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-100 sm:h-40 sm:w-full sm:rounded-none">
+      <div
+        className={cn(
+          "relative shrink-0 overflow-hidden bg-surface-100",
+          grid
+            ? "h-28 w-full sm:h-40"
+            : "h-24 w-24 rounded-lg sm:h-40 sm:w-full sm:rounded-none",
+        )}
+      >
         {product.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -44,7 +63,12 @@ export function ProductCard({ product }: { product: ProductListItem }) {
           <div className="absolute inset-0 bg-white/70" />
         ) : null}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1 sm:p-3">
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col gap-1",
+          grid ? "p-2.5" : "sm:p-3",
+        )}
+      >
         <h3 className="line-clamp-2 text-sm font-medium leading-snug text-ink-900">
           {product.title}
         </h3>
