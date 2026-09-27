@@ -91,5 +91,63 @@ export async function GET(request: NextRequest) {
     sent++;
   }
 
-  return NextResponse.json({ ok: true, vendors_notified: sent });
+  // ── Recompute vendor reliability metrics ──
+  const { data: vendors } = await admin
+    .from("vendors")
+    .select("id")
+    .eq("status", "approved");
+
+  for (const v of vendors ?? []) {
+    const [{ data: vos }, { data: verifs }, { data: vProds }] =
+      await Promise.all([
+        admin
+          .from("vendor_orders")
+          .select("status")
+          .eq("vendor_id", v.id),
+        admin
+          .from("carguvi_verifications")
+          .select("price_discrepancy, availability_discrepancy")
+          .eq("vendor_id", v.id),
+        admin
+          .from("products")
+          .select("seller_confirmed_at, seller_updated_at, carguvi_verified_at")
+          .eq("vendor_id", v.id)
+          .eq("status", "active"),
+      ]);
+
+    const total = (vos ?? []).length;
+    const completed = (vos ?? []).filter((o: any) => o.status === "completed").length;
+    const rejected = (vos ?? []).filter((o: any) =>
+      ["rejected", "cancelled"].includes(o.status),
+    ).length;
+    const accurate = (verifs ?? []).filter(
+      (x: any) => !x.price_discrepancy && !x.availability_discrepancy,
+    ).length;
+    const fresh = (vProds ?? []).filter((p: any) => {
+      const d = daysSince(p.seller_confirmed_at ?? p.seller_updated_at);
+      return d !== null && d <= 14;
+    }).length;
+
+    await admin.from("vendor_metrics").upsert(
+      {
+        vendor_id: v.id,
+        fulfilment_rate: total ? (completed / total) * 100 : null,
+        cancellation_rate: total ? (rejected / total) * 100 : null,
+        stock_accuracy:
+          verifs?.length ? (accurate / verifs.length) * 100 : null,
+        confirmation_consistency:
+          vProds?.length ? (fresh / vProds.length) * 100 : null,
+        verification_consistency:
+          verifs?.length ? (accurate / verifs.length) * 100 : null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "vendor_id" },
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    vendors_notified: sent,
+    vendors_recomputed: vendors?.length ?? 0,
+  });
 }

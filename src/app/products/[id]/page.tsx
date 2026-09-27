@@ -41,6 +41,14 @@ export default async function ProductPage({
   const compat = (product.product_compatibility as any[]) ?? [];
   const canBuy = !["out_of_stock"].includes(product.availability);
 
+  // Reviews for this product / vendor
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("rating, comment, created_at, profiles(full_name)")
+    .eq("vendor_id", vendor.id)
+    .order("created_at", { ascending: false })
+    .limit(6);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-4 pb-24 sm:pb-10">
       <nav className="mb-3 text-sm text-ink-400">
@@ -186,6 +194,12 @@ export default async function ProductPage({
                   <IconShield className="h-4 w-4 text-brand-600" />
                 ) : null}
               </p>
+              {vendor.rating ? (
+                <p className="text-xs text-ink-500">
+                  ★ {Number(vendor.rating).toFixed(1)} · {vendor.review_count}{" "}
+                  reviews
+                </p>
+              ) : null}
               {location ? (
                 <p className="flex items-center gap-1 text-xs text-ink-500">
                   <IconPin className="h-3 w-3" />
@@ -198,6 +212,26 @@ export default async function ProductPage({
               View shop
             </span>
           </Link>
+
+          {/* Contact */}
+          <div className="flex gap-2">
+            <Link
+              href={`/inquiries/new?product=${product.id}&vendor=${vendor.id}`}
+              className="tap flex-1 rounded-lg border border-surface-300 py-2.5 text-center text-sm font-medium text-ink-700"
+            >
+              Ask a question
+            </Link>
+            {vendor.whatsapp ? (
+              <a
+                href={`https://wa.me/${String(vendor.whatsapp).replace(/\D/g, "")}?text=${encodeURIComponent(`Hi, is the ${product.title} still available?`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tap flex-1 rounded-lg border border-trust-200 bg-trust-50 py-2.5 text-center text-sm font-medium text-trust-700"
+              >
+                WhatsApp seller
+              </a>
+            ) : null}
+          </div>
 
           {/* Fulfilment */}
           <div className="flex gap-3 text-sm">
@@ -214,6 +248,43 @@ export default async function ProductPage({
           </div>
         </div>
       </div>
+
+      {/* Reviews */}
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold text-ink-900">
+          Buyer reviews for {vendor.business_name}
+        </h2>
+        {reviews?.length ? (
+          <ul className="mt-3 space-y-3">
+            {reviews.map((r: any, i: number) => (
+              <li
+                key={i}
+                className="rounded-xl border border-surface-200 bg-white p-3"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-amber-600">
+                    {"★".repeat(r.rating)}
+                    <span className="text-surface-300">
+                      {"★".repeat(5 - r.rating)}
+                    </span>
+                  </span>
+                  <span className="text-xs text-ink-400">
+                    {(r.profiles as any)?.full_name ?? "Buyer"} ·{" "}
+                    {timeAgo(r.created_at)}
+                  </span>
+                </div>
+                {r.comment ? (
+                  <p className="mt-1 text-sm text-ink-700">{r.comment}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-ink-400">
+            No reviews yet.
+          </p>
+        )}
+      </section>
 
       {/* Sticky mobile buy bar */}
       <div className="fixed inset-x-0 bottom-14 z-30 border-t border-surface-200 bg-white p-3 sm:static sm:mt-8 sm:border-0 sm:p-0">
