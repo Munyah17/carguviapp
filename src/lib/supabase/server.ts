@@ -4,8 +4,10 @@ import type { Database } from "@/lib/database.types";
 import { isSupabaseConfigured, SupabaseNotConfiguredError } from "@/lib/env";
 
 export async function createClient() {
-  if (!isSupabaseConfigured()) throw new SupabaseNotConfiguredError();
+  // cookies() marks the route dynamic — must run before the config check so
+  // builds don't try to prerender DB-backed pages.
   const cookieStore = await cookies();
+  if (!isSupabaseConfigured()) throw new SupabaseNotConfiguredError();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
