@@ -25,7 +25,7 @@ export default async function EditProductPage({
 
   const { data: product } = await supabase
     .from("products")
-    .select("*, product_compatibility(*)")
+    .select("*, product_compatibility(*), product_images(*)")
     .eq("id", id)
     .eq("vendor_id", info.vendor.id)
     .single();
@@ -51,6 +51,7 @@ export default async function EditProductPage({
         models={models}
         generations={generations}
         engines={engines}
+        vendorId={info.vendor.id}
         product={product}
       />
     </div>

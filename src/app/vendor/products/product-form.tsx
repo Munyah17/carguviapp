@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { uploadProductImage } from "@/lib/supabase/storage";
 import { saveProduct, type VendorActionState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
@@ -21,6 +22,7 @@ export function ProductForm({
   models,
   generations,
   engines,
+  vendorId,
   product,
 }: {
   categories: any[];
@@ -28,6 +30,7 @@ export function ProductForm({
   models: Opt[];
   generations: Opt[];
   engines: Opt[];
+  vendorId: string;
   product?: any;
 }) {
   const [state, formAction, pending] = useActionState<
@@ -36,6 +39,11 @@ export function ProductForm({
   >(saveProduct, {});
 
   const initialCompat = product?.product_compatibility?.[0];
+  const existingImage = product?.product_images?.sort(
+    (a: any, b: any) => a.sort_order - b.sort_order,
+  )?.[0]?.url;
+  const [imageUrl, setImageUrl] = useState<string>(existingImage ?? "");
+  const [uploading, setUploading] = useState(false);
   const [makeId, setMakeId] = useState<number | "">(initialCompat?.make_id ?? "");
   const [modelId, setModelId] = useState<number | "">(initialCompat?.model_id ?? "");
   const [generationId, setGenerationId] = useState<number | "">(
@@ -139,11 +147,45 @@ export function ProductForm({
         />
       </Field>
 
-      {!product ? (
-        <Field label="Image URL" hint="Photo upload via Supabase Storage coming soon">
-          <Input name="image_url" placeholder="/images/parts/engine.svg" />
-        </Field>
-      ) : null}
+      <Field
+        label="Photo"
+        hint="Clear, well-lit photo of the actual part builds buyer trust."
+      >
+        <div className="flex items-center gap-3">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageUrl}
+              alt="Product"
+              className="h-20 w-20 rounded-lg border border-surface-200 object-cover"
+            />
+          ) : null}
+          <label className="tap cursor-pointer rounded-lg border border-dashed border-surface-300 px-4 py-2.5 text-sm font-medium text-ink-700 hover:border-brand-300 hover:bg-brand-50">
+            {uploading
+              ? "Uploading…"
+              : imageUrl
+                ? "Replace photo"
+                : "Upload photo"}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setUploading(true);
+                try {
+                  setImageUrl(await uploadProductImage(file, vendorId));
+                } finally {
+                  setUploading(false);
+                }
+              }}
+            />
+          </label>
+        </div>
+        <input type="hidden" name="image_url" value={imageUrl} />
+      </Field>
 
       <fieldset className="rounded-xl border border-surface-200 p-4">
         <legend className="px-1 text-sm font-semibold text-ink-900">

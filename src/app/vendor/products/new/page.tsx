@@ -40,6 +40,7 @@ export default async function NewProductPage() {
         models={models}
         generations={generations}
         engines={engines}
+        vendorId={info.vendor.id}
       />
     </div>
   );

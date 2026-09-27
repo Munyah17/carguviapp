@@ -120,11 +120,26 @@ export async function saveProduct(
   }
 
   const imageUrl = String(formData.get("image_url") ?? "").trim();
-  if (imageUrl && !productId) {
+  if (imageUrl) {
     const admin = createAdminClient();
-    await admin
+    const { data: existing } = await admin
       .from("product_images")
-      .insert({ product_id: id, url: imageUrl, sort_order: 0 });
+      .select("id, url")
+      .eq("product_id", id)
+      .order("sort_order")
+      .limit(1);
+    if (existing?.[0]?.url !== imageUrl) {
+      if (existing?.[0]) {
+        await admin
+          .from("product_images")
+          .update({ url: imageUrl })
+          .eq("id", existing[0].id);
+      } else {
+        await admin
+          .from("product_images")
+          .insert({ product_id: id, url: imageUrl, sort_order: 0 });
+      }
+    }
   }
 
   revalidatePath("/vendor/products");

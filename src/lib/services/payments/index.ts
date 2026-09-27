@@ -45,12 +45,18 @@ class MockPaymentProvider implements PaymentProvider {
   }
 }
 
-// Future providers implement PaymentProvider and register here.
-const providers: Record<string, PaymentProvider> = {
-  mock: new MockPaymentProvider(),
+const providers: Record<string, () => PaymentProvider | null> = {
+  mock: () => new MockPaymentProvider(),
+  paynow: () => {
+    // Lazy-loaded so the module can be imported where Paynow env is absent.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { createPaynowProvider } = require("./paynow");
+    return createPaynowProvider();
+  },
 };
 
 export function getPaymentProvider(): PaymentProvider {
   const name = process.env.PAYMENT_PROVIDER ?? "mock";
-  return providers[name] ?? providers.mock;
+  const provider = providers[name]?.();
+  return provider ?? providers.mock()!;
 }
