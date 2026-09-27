@@ -39,18 +39,18 @@ export async function Header() {
     <header className="sticky top-0 z-40 border-b border-surface-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <Logo />
-        <nav className="hidden items-center gap-1 sm:flex" aria-label="Main">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="tap rounded-lg px-3 py-2 text-sm font-medium text-ink-600 hover:bg-surface-100 hover:text-ink-900"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
         <div className="ml-auto flex items-center gap-1">
+          <nav className="hidden items-center gap-1 sm:flex" aria-label="Main">
+            {NAV_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="tap rounded-lg px-3 py-2 text-sm font-medium text-ink-600 hover:bg-surface-100 hover:text-ink-900"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
           <Link
             href="/cart"
             className="tap rounded-lg p-2 text-ink-700 hover:bg-surface-100"
@@ -67,6 +67,14 @@ export async function Header() {
               {user ? "Account" : "Sign in"}
             </span>
           </Link>
+          {!user ? (
+            <Link
+              href="/auth/register"
+              className="tap hidden rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 sm:inline-block"
+            >
+              Get Started
+            </Link>
+          ) : null}
         </div>
       </div>
     </header>

@@ -85,7 +85,15 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-10 flex flex-col gap-2 border-t border-ink-800 pt-5 text-xs text-ink-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Carguvi. Harare, Zimbabwe.</p>
+          <a
+            href="https://globalspaceweb.co.zw"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tap hover:text-white"
+          >
+            © {new Date().getFullYear()} Carguvi. Harare, Zimbabwe. Developed
+            and Powered By Global Space Web.
+          </a>
           <p>Parts, verified.</p>
         </div>
       </div>

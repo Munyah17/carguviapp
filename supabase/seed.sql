@@ -104,7 +104,7 @@ insert into public.categories (id, parent_id, name, slug, icon, sort_order) valu
   (2, null, 'Gearboxes', 'gearboxes', 'gearbox', 2),
   (3, null, 'Brakes', 'brakes', 'brakes', 3),
   (4, null, 'Suspension', 'suspension', 'suspension', 4),
-  (5, null, 'Electrical', 'electrical', 'electrical', 5),
+  (5, null, 'Auto Electrics', 'electrical', 'electrical', 5),
   (6, null, 'Body Parts', 'body-parts', 'body', 6),
   (7, null, 'Tyres', 'tyres', 'tyre', 7),
   (8, null, 'Batteries', 'batteries', 'battery', 8),
