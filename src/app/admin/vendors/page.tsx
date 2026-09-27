@@ -56,6 +56,22 @@ export default async function AdminVendorsPage({
                 </div>
                 <Badge tone={tone[v.status]}>{v.status}</Badge>
               </div>
+              {Array.isArray(v.business_documents) &&
+              v.business_documents.length > 0 ? (
+                <p className="mt-2 flex flex-wrap gap-2 text-xs">
+                  {v.business_documents.map((doc: string, i: number) => (
+                    <a
+                      key={i}
+                      href={doc}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-brand-700 underline"
+                    >
+                      Document {i + 1}
+                    </a>
+                  ))}
+                </p>
+              ) : null}
               {v.status === "approved" && m ? (
                 <p className="mt-2 text-xs text-ink-500">
                   Stock accuracy {Math.round(m.stock_accuracy ?? 0)}% ·

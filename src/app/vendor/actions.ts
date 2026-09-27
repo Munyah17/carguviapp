@@ -355,6 +355,24 @@ export async function applyToSell(_prev: VendorActionState, formData: FormData) 
     "-" +
     Math.random().toString(36).slice(2, 6);
 
+  // Upload business documents (registration, ID) to private storage.
+  const admin0 = createAdminClient();
+  const docUrls: string[] = [];
+  for (const file of formData.getAll("documents")) {
+    if (!(file instanceof File) || file.size === 0) continue;
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
+    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await admin0.storage
+      .from("vendor-documents")
+      .upload(path, file);
+    if (!upErr) {
+      const { data: signed } = await admin0.storage
+        .from("vendor-documents")
+        .createSignedUrl(path, 60 * 60 * 24 * 365);
+      docUrls.push(signed?.signedUrl ?? path);
+    }
+  }
+
   const { data: vendor, error } = await supabase
     .from("vendors")
     .insert({
@@ -369,6 +387,7 @@ export async function applyToSell(_prev: VendorActionState, formData: FormData) 
       operating_area: String(formData.get("operating_area") ?? "") || null,
       city: String(formData.get("city") ?? "Harare"),
       description: String(formData.get("description") ?? "") || null,
+      business_documents: docUrls,
       status: "pending",
     })
     .select("id")

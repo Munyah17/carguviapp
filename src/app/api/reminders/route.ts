@@ -91,6 +91,44 @@ export async function GET(request: NextRequest) {
     sent++;
   }
 
+  // ── Review reminders: completed vendor_orders >24h old, not yet reviewed ──
+  const dayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const { data: completed } = await admin
+    .from("vendor_orders")
+    .select("id, order_id, vendors(business_name), orders(customer_id, created_at)")
+    .eq("status", "completed")
+    .lt("updated_at", dayAgo)
+    .limit(200);
+
+  let reviewReminders = 0;
+  for (const vo of completed ?? []) {
+    const customerId = (vo.orders as any)?.customer_id;
+    if (!customerId) continue;
+    const { data: review } = await admin
+      .from("reviews")
+      .select("id")
+      .eq("vendor_order_id", vo.id)
+      .eq("user_id", customerId)
+      .limit(1);
+    if (review?.length) continue;
+    const { data: recent } = await admin
+      .from("notifications")
+      .select("id")
+      .eq("user_id", customerId)
+      .eq("type", "review_reminder")
+      .gte("created_at", since)
+      .limit(1);
+    if (recent?.length) continue;
+    await admin.from("notifications").insert({
+      user_id: customerId,
+      type: "review_reminder",
+      title: "How was your part?",
+      body: `Tell other buyers how it went with ${(vo.vendors as any)?.business_name ?? "the vendor"}.`,
+      data: { vendor_order_id: vo.id },
+    });
+    reviewReminders++;
+  }
+
   // ── Recompute vendor reliability metrics ──
   const { data: vendors } = await admin
     .from("vendors")
@@ -148,6 +186,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     ok: true,
     vendors_notified: sent,
+    review_reminders: reviewReminders,
     vendors_recomputed: vendors?.length ?? 0,
   });
 }

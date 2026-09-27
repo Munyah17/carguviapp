@@ -65,6 +65,18 @@ export default function VendorApplyPage() {
         >
           <Textarea name="description" rows={3} />
         </Field>
+        <Field
+          label="Business documents (optional)"
+          hint="Registration, trading licence or ID — speeds up verification. PDF or photo."
+        >
+          <input
+            type="file"
+            name="documents"
+            multiple
+            accept="image/*,application/pdf"
+            className="block w-full text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-700"
+          />
+        </Field>
 
         {state.error === "sign_in_required" ? (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">

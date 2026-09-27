@@ -40,6 +40,17 @@ export default async function OrderDetailPage({
     .single();
   if (!order || order.customer_id !== user.id) notFound();
 
+  // Vendor orders already reviewed by this customer
+  const { data: myReviews } = await supabase
+    .from("reviews")
+    .select("vendor_order_id")
+    .eq("user_id", user.id)
+    .in(
+      "vendor_order_id",
+      (order.vendor_orders as any[]).map((vo) => vo.id),
+    );
+  const reviewedVOs = new Set((myReviews ?? []).map((r: any) => r.vendor_order_id));
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
       {sp.placed ? (
@@ -167,6 +178,17 @@ export default async function OrderDetailPage({
                 </li>
               ))}
             </ul>
+
+            {vo.status === "completed" && !reviewedVOs.has(vo.id) ? (
+              <div className="border-t border-surface-100 px-4 py-3">
+                <Link
+                  href={`/reviews/new?vo=${vo.id}`}
+                  className="tap inline-block rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white"
+                >
+                  Review {vo.vendors?.business_name}
+                </Link>
+              </div>
+            ) : null}
           </section>
         );
       })}
@@ -200,14 +222,6 @@ export default async function OrderDetailPage({
         >
           Report a problem
         </Link>
-        {order.status === "completed" ? (
-          <Link
-            href={`/reviews/new?order=${order.id}`}
-            className="tap rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white"
-          >
-            Leave a review
-          </Link>
-        ) : null}
       </div>
     </div>
   );
