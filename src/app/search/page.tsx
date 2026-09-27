@@ -13,6 +13,8 @@ import { IconSearch, IconShield } from "@/components/ui/icons";
 import { signalDemand } from "@/lib/services/demand";
 import { getAIProvider } from "@/lib/services/ai";
 import { PhotoSearchButton } from "./photo-search";
+import { MyVehicleSelect, type GarageVehicle } from "./my-vehicle";
+import { isSupabaseConfigured } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -63,12 +65,35 @@ export default async function SearchPage({
     ]);
   results = initialResults;
 
+  // Garage vehicles for the "My vehicle" quick filter.
+  const supabase = isSupabaseConfigured() ? await createClient() : null;
+  const {
+    data: { user },
+  } = supabase
+    ? await supabase.auth.getUser()
+    : { data: { user: null } };
+  const { data: garageVehicles } = supabase && user
+    ? await supabase
+        .from("customer_vehicles")
+        .select(
+          "id, nickname, year, make_id, model_id, generation_id, engine_id, vehicle_makes(name), vehicle_models(name), vehicle_generations(name)",
+        )
+        .eq("user_id", user.id)
+        .order("is_primary", { ascending: false })
+    : { data: [] };
+  const myVehicles: GarageVehicle[] = (garageVehicles ?? []).map(
+    (v: any) => ({
+      id: v.id,
+      label: `${v.nickname ?? [v.vehicle_makes?.name, v.vehicle_models?.name].filter(Boolean).join(" ")}${v.year ? ` (${v.year})` : ""}`,
+      make_id: v.make_id,
+      model_id: v.model_id,
+      generation_id: v.generation_id,
+      engine_id: v.engine_id,
+    }),
+  );
+
   // Log the search for demand-triggered verification signals.
-  if (q.trim()) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  if (q.trim() && supabase) {
     await supabase.from("search_events").insert({
       user_id: user?.id ?? null,
       query: q.trim(),
@@ -152,6 +177,7 @@ export default async function SearchPage({
           </button>
         </form>
         <PhotoSearchButton />
+        <MyVehicleSelect vehicles={myVehicles} />
       </div>
 
       {/* Filters */}
