@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { isSupabaseConfigured } from "@/lib/env";
+import { createClient } from "@/lib/supabase/server";
+import { getUserRoles } from "@/lib/queries";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +26,19 @@ export const metadata: Metadata = {
     "Zimbabwe's vehicle-parts marketplace. Search parts, compare verified vendors, buy with confidence.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  let isVendor = false;
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const roles = await getUserRoles(user.id);
+      isVendor = roles.includes("vendor");
+    }
+  }
+
   return (
     <html
       lang="en"
@@ -32,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-white pb-16 sm:pb-0">
         <Header />
         <main className="flex-1">{children}</main>
-        <BottomNav />
+        <BottomNav isVendor={isVendor} />
       </body>
     </html>
   );

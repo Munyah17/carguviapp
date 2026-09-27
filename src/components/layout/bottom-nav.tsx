@@ -8,19 +8,29 @@ import {
   IconHome,
   IconPackage,
   IconSearch,
+  IconStore,
   IconUser,
 } from "@/components/ui/icons";
 
-const items = [
+const baseItems = [
   { href: "/", label: "Home", icon: IconHome },
   { href: "/search", label: "Search", icon: IconSearch },
   { href: "/orders", label: "Orders", icon: IconPackage },
   { href: "/garage", label: "Garage", icon: IconCar },
-  { href: "/account", label: "Account", icon: IconUser },
 ];
 
-export function BottomNav() {
+export function BottomNav({ isVendor }: { isVendor?: boolean }) {
   const pathname = usePathname();
+  const items = isVendor
+    ? [
+        baseItems[0],
+        baseItems[1],
+        { href: "/vendor", label: "Shop", icon: IconStore },
+        baseItems[3],
+        { href: "/account", label: "Account", icon: IconUser },
+      ]
+    : [...baseItems, { href: "/account", label: "Account", icon: IconUser }];
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-200 bg-white pb-[env(safe-area-inset-bottom)] sm:hidden">
       <div className="grid grid-cols-5">
