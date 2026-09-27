@@ -15,12 +15,13 @@ export async function signalDemand(productIds: string[]) {
   const { data: products } = await admin
     .from("products")
     .select(
-      "id, title, availability, status, carguvi_verified_at, seller_confirmed_at, seller_updated_at, vendors(id, owner_user_id)",
+      "id, title, availability, status, carguvi_verified_at, seller_confirmed_at, seller_updated_at, vendors(id, owner_user_id, business_name)",
     )
     .in("id", productIds)
     .eq("status", "active");
 
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
   for (const p of products ?? []) {
     if ((p as any).availability === "out_of_stock") continue;
@@ -51,5 +52,41 @@ export async function signalDemand(productIds: string[]) {
       body: `Your ${(p as any).title} listing hasn't been confirmed recently. Still available?`,
       data: { product_id: (p as any).id },
     });
+
+    // Escalate: if this stale listing keeps attracting demand, flag to ops
+    // for a physical verification dispatch.
+    const { count } = await admin
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "demand_trigger")
+      .filter("data->>product_id", "eq", (p as any).id)
+      .gte("created_at", weekAgo);
+    if ((count ?? 0) >= 2) {
+      const { data: alreadyFlagged } = await admin
+        .from("notifications")
+        .select("id")
+        .eq("type", "verification_recommended")
+        .filter("data->>product_id", "eq", (p as any).id)
+        .gte("created_at", weekAgo)
+        .limit(1);
+      if (!alreadyFlagged?.length) {
+        const { data: admins } = await admin
+          .from("user_roles")
+          .select("user_id")
+          .in("role", ["admin", "super_admin"]);
+        for (const a of admins ?? []) {
+          await admin.from("notifications").insert({
+            user_id: a.user_id,
+            type: "verification_recommended",
+            title: "Physical check recommended",
+            body: `"${(p as any).title}" at ${(p as any).vendors?.business_name} is stale but attracting demand. Consider assigning an enumerator.`,
+            data: {
+              product_id: (p as any).id,
+              vendor_id: (p as any).vendors?.id,
+            },
+          });
+        }
+      }
+    }
   }
 }
