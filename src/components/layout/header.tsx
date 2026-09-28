@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getUserRoles } from "@/lib/queries";
-import { IconCart, IconUser } from "@/components/ui/icons";
+import { IconCart } from "@/components/ui/icons";
 import { MobileMenu } from "./mobile-menu";
 
 export function Logo({ className = "h-7" }: { className?: string }) {
@@ -74,10 +74,9 @@ export async function Header() {
           </Link>
           <Link
             href={user ? "/account" : "/auth/sign-in"}
-            className="tap hidden items-center gap-2 rounded-lg p-2 text-sm font-medium text-ink-700 hover:bg-surface-100 sm:flex"
+            className="tap hidden rounded-lg border border-surface-300 px-3.5 py-1.5 text-sm font-medium text-ink-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 sm:block"
           >
-            <IconUser className="h-5 w-5" />
-            <span>{user ? "Account" : "Sign in"}</span>
+            {user ? "Account" : "Sign in"}
           </Link>
           {!user ? (
             <Link
