@@ -43,7 +43,7 @@ export function Footer() {
   return (
     <footer className="border-t border-surface-200 bg-ink-950 text-ink-300">
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-8 sm:grid-cols-[1.5fr_repeat(4,1fr)]">
+        <div className="grid gap-8">
           <div>
             <span className="flex items-center gap-2">
               <svg viewBox="0 0 32 32" className="h-7 w-7" aria-hidden>
@@ -64,6 +64,7 @@ export function Footer() {
               Availability confirmed by field agents
             </p>
           </div>
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           {COLS.map((col) => (
             <nav key={col.title} aria-label={col.title}>
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-500">
@@ -83,6 +84,7 @@ export function Footer() {
               </ul>
             </nav>
           ))}
+          </div>
         </div>
         <div className="mt-10 flex flex-col gap-2 border-t border-ink-800 pt-5 text-xs text-ink-500 sm:flex-row sm:items-center sm:justify-between">
           <a

@@ -5,7 +5,7 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
   return (
     <input
       className={cn(
-        "h-11 w-full rounded-lg border border-surface-300 bg-white px-3 text-sm text-ink-900 placeholder:text-ink-400",
+        "h-11 w-full rounded-lg border border-surface-300 bg-white px-3 text-base text-ink-900 placeholder:text-ink-400 sm:text-sm",
         "focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100",
         className,
       )}
@@ -18,7 +18,7 @@ export function Select({ className, children, ...props }: ComponentProps<"select
   return (
     <select
       className={cn(
-        "h-11 w-full rounded-lg border border-surface-300 bg-white px-3 text-sm text-ink-900",
+        "h-11 w-full rounded-lg border border-surface-300 bg-white px-3 text-base text-ink-900 sm:text-sm",
         "focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100",
         className,
       )}
@@ -33,7 +33,7 @@ export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
   return (
     <textarea
       className={cn(
-        "w-full rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400",
+        "w-full rounded-lg border border-surface-300 bg-white px-3 py-2 text-base text-ink-900 placeholder:text-ink-400 sm:text-sm",
         "focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100",
         className,
       )}

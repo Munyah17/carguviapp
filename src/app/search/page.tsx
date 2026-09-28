@@ -366,7 +366,7 @@ export default async function SearchPage({
           </p>
         </div>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-3 pb-10 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-2.5 pb-10 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
           {results.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

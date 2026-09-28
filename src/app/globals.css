@@ -51,6 +51,12 @@
   --color-fresh-gray: #8a94a3;
 }
 
+html,
+body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

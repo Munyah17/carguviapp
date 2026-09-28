@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import type { ProductListItem } from "./types";
 
 const PRODUCT_LIST_SELECT = `
-  id, title, price, currency, condition, availability, quantity,
+  id, title, description, price, currency, condition, availability, quantity,
   seller_updated_at, seller_confirmed_at, carguvi_verified_at,
   pickup_available, delivery_available,
   product_images(url, sort_order),
@@ -28,6 +28,7 @@ export function toListItem(row: any): ProductListItem {
     pickup_available: row.pickup_available,
     delivery_available: row.delivery_available,
     image_url: imgs[0]?.url ?? null,
+    description: row.description ?? null,
     vendor: row.vendors ?? null,
   };
 }

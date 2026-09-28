@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
+import { getUserRoles } from "@/lib/queries";
 import { IconCart, IconUser } from "@/components/ui/icons";
 import { MobileMenu } from "./mobile-menu";
 
@@ -32,16 +33,28 @@ const NAV_LINKS = [
 
 export async function Header() {
   let user = null;
+  let roles: string[] = [];
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
     user = data.user;
+    if (user) {
+      roles = await getUserRoles(user.id);
+    }
   }
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
-        <Logo />
+        <MobileMenu
+          signedIn={!!user}
+          isVendor={roles.includes("vendor")}
+          isAdmin={roles.includes("admin") || roles.includes("super_admin")}
+          isEnumerator={roles.includes("enumerator")}
+        />
+        <span className="hidden sm:block">
+          <Logo />
+        </span>
         <div className="ml-auto flex items-center gap-1">
           <nav className="hidden items-center gap-1 sm:flex" aria-label="Main">
             {NAV_LINKS.map((l) => (
@@ -76,7 +89,6 @@ export async function Header() {
               Get Started
             </Link>
           ) : null}
-          <MobileMenu signedIn={!!user} />
         </div>
       </div>
     </header>

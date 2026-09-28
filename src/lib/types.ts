@@ -33,6 +33,7 @@ export interface ProductListItem {
   pickup_available: boolean;
   delivery_available: boolean;
   image_url: string | null;
+  description: string | null;
   vendor: VendorSummary | null;
   distance_km?: number | null;
 }

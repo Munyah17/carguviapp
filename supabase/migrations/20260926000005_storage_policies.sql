@@ -1,4 +1,4 @@
-﻿-- Storage object policies.
+-- Storage object policies.
 -- product-images (public bucket): vendors write only inside a folder named
 -- after their own vendor id:  <vendor_id>/<file>.
 -- verification-photos (private): enumerators write under their own folder;

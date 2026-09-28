@@ -10,6 +10,7 @@ import {
 } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
 import { HeroSlider, type HeroSlide } from "@/components/home/hero-slider";
+import { PeekRail } from "@/components/home/peek-rail";
 import {
   IconCar,
   IconChevronRight,
@@ -199,11 +200,13 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-10">
-            {categories.slice(0, 10).map((c: any) => (
+            {categories.slice(0, 10).map((c: any, i: number) => (
               <Link
                 key={c.id}
                 href={`/search?category_id=${c.id}`}
-                className="tap flex flex-col items-center gap-1.5 rounded-xl border border-surface-200 bg-white px-1 py-3 text-center hover:border-brand-200 hover:bg-brand-50"
+                className={`tap flex flex-col items-center gap-1.5 rounded-xl border border-surface-200 bg-white px-1 py-3 text-center hover:border-brand-200 hover:bg-brand-50 ${
+                  i >= 8 ? "max-sm:hidden" : ""
+                }`}
               >
                 <CategoryGlyph slug={c.slug} />
                 <span className="text-[11px] font-medium leading-tight text-ink-700">
@@ -248,11 +251,11 @@ export default async function HomePage() {
                 See all <IconChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-              {products.slice(0, 4).map((p: any) => (
-                <ProductCard key={p.id} product={p} grid />
+            <PeekRail cols="sm:grid-cols-4">
+              {products.slice(0, 6).map((p: any) => (
+                <ProductCard key={p.id} product={p} />
               ))}
-            </div>
+            </PeekRail>
           </section>
         ))}
 
@@ -265,11 +268,11 @@ export default async function HomePage() {
                 Verified near you
               </h2>
             </div>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
+            <PeekRail cols="sm:grid-cols-3 lg:grid-cols-4">
               {verified.map((p) => (
-                <ProductCard key={p.id} product={p} grid />
+                <ProductCard key={p.id} product={p} />
               ))}
-            </div>
+            </PeekRail>
           </section>
         ) : null}
 
