@@ -5,8 +5,10 @@ import { cn } from "@/lib/cn";
 import { CardActions } from "./card-actions";
 
 /**
- * Clean commerce tile: ~60% image, title, price, one-line description,
- * Add to cart + Buy now. Trust/verification detail lives on the product page.
+ * Fixed-template commerce tile — every slot has a reserved height so cards in
+ * a row are pixel-identical and the action buttons always align:
+ *   image (4:3) → title (2 lines) → price → description (1 line) → buttons.
+ * Trust/verification detail lives on the product page.
  */
 export function ProductCard({
   product,
@@ -18,7 +20,7 @@ export function ProductCard({
 }) {
   const outOfStock = product.availability === "out_of_stock";
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-surface-200 bg-white transition-shadow hover:shadow-sm">
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-surface-200 bg-white transition-shadow hover:shadow-sm">
       <Link
         href={`/products/${product.id}`}
         className="tap relative block aspect-[4/3] w-full overflow-hidden bg-surface-100"
@@ -47,24 +49,26 @@ export function ProductCard({
       <div className="flex min-w-0 flex-1 flex-col p-2.5">
         <Link
           href={`/products/${product.id}`}
-          className="tap line-clamp-2 text-sm font-medium leading-snug text-ink-900 hover:text-brand-800"
+          className="tap line-clamp-2 h-10 text-sm font-medium leading-snug text-ink-900 hover:text-brand-800"
         >
           {product.title}
         </Link>
-        <p className="mt-0.5 text-base font-semibold text-ink-900">
+        <p className="mt-1 h-6 text-base font-semibold leading-6 text-ink-900">
           {formatPrice(product.price, product.currency)}
         </p>
         <p
           className={cn(
-            "mt-0.5 line-clamp-1 text-xs",
+            "mt-1 h-4 truncate text-xs leading-4",
             outOfStock ? "text-red-600" : "text-ink-500",
           )}
         >
           {outOfStock
             ? "Currently unavailable"
-            : product.description || product.vendor?.business_name}
+            : product.description || product.vendor?.business_name || ""}
         </p>
-        <CardActions productId={product.id} disabled={outOfStock} />
+        <div className="mt-auto pt-2">
+          <CardActions productId={product.id} disabled={outOfStock} />
+        </div>
       </div>
     </div>
   );

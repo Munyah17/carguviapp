@@ -40,9 +40,14 @@ export interface SearchParams {
   modelId?: number;
   generationId?: number;
   engineId?: number;
+  partNumber?: string;
+  area?: string;
+  year?: number;
   condition?: string;
   availability?: string;
   verifiedOnly?: boolean;
+  pickupOnly?: boolean;
+  deliveryOnly?: boolean;
   maxPrice?: number;
   minPrice?: number;
   sort?: "relevance" | "price_asc" | "price_desc" | "newest" | "freshest";
@@ -72,8 +77,15 @@ export async function searchProducts(p: SearchParams): Promise<ProductListItem[]
     const ids = [p.categoryId, ...(children ?? []).map((c: any) => c.id)];
     query = query.in("category_id", ids);
   }
+  if (p.partNumber && p.partNumber.trim()) {
+    const pn = escapeLike(p.partNumber.trim());
+    query = query.or(`part_number.ilike.%${pn}%,oem_number.ilike.%${pn}%`);
+  }
   if (p.condition) query = query.eq("condition", p.condition as any);
   if (p.availability) query = query.eq("availability", p.availability as any);
+  if (p.area) query = query.eq("vendors.operating_area", p.area);
+  if (p.pickupOnly) query = query.eq("pickup_available", true);
+  if (p.deliveryOnly) query = query.eq("delivery_available", true);
   if (p.verifiedOnly) {
     query = query.not("carguvi_verified_at", "is", null);
   }
@@ -83,11 +95,11 @@ export async function searchProducts(p: SearchParams): Promise<ProductListItem[]
   // Vehicle compatibility filter: product must have a matching fitment row,
   // or no fitment rows at all (universal products).
   const vehicleFilter =
-    p.makeId || p.modelId || p.generationId || p.engineId;
+    p.makeId || p.modelId || p.generationId || p.engineId || p.year;
   if (vehicleFilter) {
     let compatQuery = supabase
       .from("product_compatibility")
-      .select("product_id");
+      .select("product_id, year_start, year_end");
     if (p.engineId) {
       compatQuery = compatQuery.or(
         `engine_id.eq.${p.engineId},engine_id.is.null`,
@@ -108,7 +120,16 @@ export async function searchProducts(p: SearchParams): Promise<ProductListItem[]
         `make_id.eq.${p.makeId},make_id.is.null`,
       );
     }
-    const { data: compatRows } = await compatQuery;
+    const { data: rawCompat } = await compatQuery;
+    // Year range is evaluated in JS: a fitment row matches if its range
+    // contains the year (null bounds = open-ended).
+    const compatRows = p.year
+      ? (rawCompat ?? []).filter(
+          (r: any) =>
+            (r.year_start == null || r.year_start <= p.year!) &&
+            (r.year_end == null || r.year_end >= p.year!),
+        )
+      : (rawCompat ?? []);
     const ids = [...new Set((compatRows ?? []).map((r: any) => r.product_id))];
     if (ids.length === 0) return [];
     query = query.in("id", ids);
@@ -172,6 +193,17 @@ export async function getProductById(id: string) {
     .single();
   if (error) return null;
   return data;
+}
+
+/** Distinct operating areas for the "Location" filter. */
+export async function getVendorAreas(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("vendors")
+    .select("operating_area")
+    .not("operating_area", "is", null);
+  const areas = [...new Set((data ?? []).map((v: any) => v.operating_area as string))];
+  return areas.sort();
 }
 
 export async function getVendorBySlug(slug: string) {

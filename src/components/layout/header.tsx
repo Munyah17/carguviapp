@@ -23,10 +23,7 @@ export function Logo({ className = "h-7" }: { className?: string }) {
 }
 
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
   { href: "/search", label: "Shop Parts" },
-  { href: "/categories", label: "Categories" },
-  { href: "/garage", label: "My Garage" },
   { href: "/request-part", label: "Request a Part" },
   { href: "/vendor/apply", label: "Sell on Carguvi" },
 ];

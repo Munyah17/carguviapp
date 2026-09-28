@@ -6,6 +6,7 @@ import {
   getHeroSlides,
   getPopularSearches,
   getVerifiedProducts,
+  getVehicleMakes,
   searchProducts,
 } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
@@ -34,24 +35,27 @@ export default async function HomePage() {
   let popular: string[] = [];
   let vehicles: any[] = [];
   let slides: HeroSlide[] = [];
+  let makes: any[] = [];
   let featuredSections: { category: any; products: any[] }[] = [];
 
   if (configured) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
     user = data.user;
-    const [cats, ver, pop, veh, slideRes] = await Promise.all([
+    const [cats, ver, pop, veh, slideRes, mk] = await Promise.all([
       getCategories(),
       getVerifiedProducts(8),
       getPopularSearches(),
       user ? getCustomerVehicles(user.id) : Promise.resolve([]),
       getHeroSlides(),
+      getVehicleMakes(),
     ]);
     categories = cats;
     verified = ver;
     popular = pop;
     vehicles = veh;
     slides = slideRes as HeroSlide[];
+    makes = mk;
 
     // Products for featured category sections (top-level categories only).
     const featured = categories.filter((c) =>
@@ -79,23 +83,73 @@ export default async function HomePage() {
         <section className="-mt-8 relative z-10">
           <form
             action="/search"
-            className="flex gap-2 rounded-2xl border border-surface-200 bg-white p-2 shadow-lg"
+            className="rounded-2xl border border-surface-200 bg-white p-2 shadow-lg"
           >
-            <div className="relative flex-1">
-              <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-              <input
-                type="search"
-                name="q"
-                placeholder="e.g. Mazda Demio new shape petrol engine"
-                className="h-12 w-full rounded-xl bg-surface-50 pl-9 pr-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+                <input
+                  type="search"
+                  name="q"
+                  placeholder="Part name, number or vehicle — e.g. Demio ZJ-VE engine"
+                  className="h-12 w-full rounded-xl bg-surface-50 pl-9 pr-3 text-base focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200 sm:text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                className="tap h-12 shrink-0 rounded-xl bg-brand-700 px-5 text-sm font-medium text-white hover:bg-brand-800"
+              >
+                Search
+              </button>
             </div>
-            <button
-              type="submit"
-              className="tap h-12 rounded-xl bg-brand-700 px-5 text-sm font-medium text-white hover:bg-brand-800"
-            >
-              Search
-            </button>
+            {/* Quick filters — the three questions buyers ask most */}
+            <div className="mt-2 grid grid-cols-3 gap-2 px-0.5">
+              <select
+                name="category_id"
+                defaultValue=""
+                aria-label="Category"
+                className="h-10 min-w-0 rounded-lg border border-surface-200 bg-white px-2 text-sm text-ink-700"
+              >
+                <option value="">All categories</option>
+                {categories.map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="make_id"
+                defaultValue=""
+                aria-label="Vehicle make"
+                className="h-10 min-w-0 rounded-lg border border-surface-200 bg-white px-2 text-sm text-ink-700"
+              >
+                <option value="">Any make</option>
+                {makes.map((m: any) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="condition"
+                defaultValue=""
+                aria-label="Condition"
+                className="h-10 min-w-0 rounded-lg border border-surface-200 bg-white px-2 text-sm text-ink-700"
+              >
+                <option value="">Any condition</option>
+                <option value="new">New</option>
+                <option value="used">Used</option>
+                <option value="refurbished">Refurbished</option>
+              </select>
+            </div>
+            <div className="mt-1 flex justify-end">
+              <Link
+                href="/search"
+                className="tap px-1 text-xs font-medium text-brand-700 hover:text-brand-800"
+              >
+                Advanced search — filter by engine, year, price, area &amp; more →
+              </Link>
+            </div>
           </form>
         </section>
 

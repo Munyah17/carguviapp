@@ -7,6 +7,7 @@ import {
   getVehicleModels,
   getVehicleGenerations,
   getVehicleEngines,
+  getVendorAreas,
 } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
 import { IconSearch, IconShield } from "@/components/ui/icons";
@@ -33,13 +34,18 @@ export default async function SearchPage({
   const condition = str(sp.condition);
   const availability = str(sp.availability);
   const verifiedOnly = sp.verified === "1";
+  const partNumber = str(sp.part_number);
+  const area = str(sp.area);
+  const year = num(sp.year);
+  const pickupOnly = sp.pickup === "1";
+  const deliveryOnly = sp.delivery === "1";
   const minPrice = num(sp.min_price);
   const maxPrice = num(sp.max_price);
   const sort = str(sp.sort);
 
   let results: Awaited<ReturnType<typeof searchProducts>> = [];
   let aiNote: { make?: string; model?: string; keywords?: string[] } | null = null;
-  const [initialResults, categories, makes, models, generations, engines] =
+  const [initialResults, categories, makes, models, generations, engines, areas] =
     await Promise.all([
       searchProducts({
         q,
@@ -48,9 +54,14 @@ export default async function SearchPage({
         modelId,
         generationId,
         engineId,
+        partNumber,
+        area,
+        year,
         condition,
         availability,
         verifiedOnly,
+        pickupOnly,
+        deliveryOnly,
         minPrice,
         maxPrice,
         sort: (sort as any) ?? "relevance",
@@ -62,6 +73,7 @@ export default async function SearchPage({
       generationId
         ? getVehicleEngines(generationId)
         : getVehicleEngines(),
+      getVendorAreas(),
     ]);
   results = initialResults;
 
@@ -143,6 +155,11 @@ export default async function SearchPage({
       condition,
       availability,
       verified: verifiedOnly ? "1" : undefined,
+      part_number: partNumber,
+      area,
+      year,
+      pickup: pickupOnly ? "1" : undefined,
+      delivery: deliveryOnly ? "1" : undefined,
       min_price: minPrice,
       max_price: maxPrice,
       sort,
@@ -197,14 +214,8 @@ export default async function SearchPage({
         </summary>
         <form action="/search" className="grid grid-cols-2 gap-3 border-t border-surface-200 p-4 sm:grid-cols-4">
           <input type="hidden" name="q" value={q} />
-          <FilterSelect label="Category" name="category_id" value={categoryId}>
-            <option value="">All categories</option>
-            {categories.map((c: any) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </FilterSelect>
+
+          {/* Vehicle fitment */}
           <FilterSelect label="Make" name="make_id" value={makeId}>
             <option value="">Any make</option>
             {makes.map((m: any) => (
@@ -241,6 +252,49 @@ export default async function SearchPage({
               </option>
             ))}
           </FilterSelect>
+
+          {/* Part + listing */}
+          <FilterSelect label="Category" name="category_id" value={categoryId}>
+            <option value="">All categories</option>
+            {categories.map((c: any) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </FilterSelect>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-ink-500">
+              Part / OEM number
+            </span>
+            <input
+              name="part_number"
+              defaultValue={partNumber ?? ""}
+              placeholder="e.g. 90919-01210"
+              className="h-10 w-full rounded-lg border border-surface-300 px-3 text-sm"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-ink-500">
+              Vehicle year
+            </span>
+            <input
+              name="year"
+              type="number"
+              min={1980}
+              max={2030}
+              defaultValue={year ?? ""}
+              placeholder="e.g. 2016"
+              className="h-10 w-full rounded-lg border border-surface-300 px-3 text-sm"
+            />
+          </label>
+          <FilterSelect label="Location" name="area" value={area}>
+            <option value="">All areas</option>
+            {areas.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </FilterSelect>
           <FilterSelect label="Condition" name="condition" value={condition}>
             <option value="">Any condition</option>
             <option value="new">New</option>
@@ -257,23 +311,12 @@ export default async function SearchPage({
             <option value="low_stock">Low stock</option>
             <option value="available_on_order">Available on order</option>
           </FilterSelect>
-          <label className="flex items-center gap-2 text-sm text-ink-700">
-            <input
-              type="checkbox"
-              name="verified"
-              value="1"
-              defaultChecked={verifiedOnly}
-              className="h-4 w-4 rounded border-surface-300 text-brand-700"
-            />
-            <IconShield className="h-4 w-4 text-brand-600" />
-            Carguvi confirmed
-          </label>
           <div className="col-span-2 flex gap-2">
             <input
               name="min_price"
               type="number"
               min={0}
-              placeholder="Min $"
+              placeholder="Min price $"
               defaultValue={minPrice ?? ""}
               className="h-10 w-full rounded-lg border border-surface-300 px-3 text-sm"
             />
@@ -281,10 +324,45 @@ export default async function SearchPage({
               name="max_price"
               type="number"
               min={0}
-              placeholder="Max $"
+              placeholder="Max price $"
               defaultValue={maxPrice ?? ""}
               className="h-10 w-full rounded-lg border border-surface-300 px-3 text-sm"
             />
+          </div>
+
+          {/* Options row */}
+          <div className="col-span-2 flex flex-wrap items-center gap-x-5 gap-y-2 sm:col-span-4">
+            <label className="flex items-center gap-2 text-sm text-ink-700">
+              <input
+                type="checkbox"
+                name="verified"
+                value="1"
+                defaultChecked={verifiedOnly}
+                className="h-4 w-4 rounded border-surface-300 text-brand-700"
+              />
+              <IconShield className="h-4 w-4 text-brand-600" />
+              Carguvi confirmed
+            </label>
+            <label className="flex items-center gap-2 text-sm text-ink-700">
+              <input
+                type="checkbox"
+                name="pickup"
+                value="1"
+                defaultChecked={pickupOnly}
+                className="h-4 w-4 rounded border-surface-300 text-brand-700"
+              />
+              Pickup available
+            </label>
+            <label className="flex items-center gap-2 text-sm text-ink-700">
+              <input
+                type="checkbox"
+                name="delivery"
+                value="1"
+                defaultChecked={deliveryOnly}
+                className="h-4 w-4 rounded border-surface-300 text-brand-700"
+              />
+              Delivery available
+            </label>
           </div>
           <div className="col-span-2 flex gap-2 sm:col-span-4">
             <button
