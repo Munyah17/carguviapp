@@ -92,31 +92,44 @@ export async function saveProduct(
   }
   if (!id) return { error: "Save failed." };
 
-  // Compatibility rows
-  const makeId = Number(formData.get("make_id")) || null;
-  const modelId = Number(formData.get("model_id")) || null;
-  const generationId = Number(formData.get("generation_id")) || null;
-  const engineId = Number(formData.get("engine_id")) || null;
-  const yearStart = Number(formData.get("year_start")) || null;
-  const yearEnd = Number(formData.get("year_end")) || null;
+  // Compatibility rows — parallel arrays, one vehicle fitment per row.
+  const makes = formData.getAll("fitment_make");
+  const models = formData.getAll("fitment_model");
+  const gens = formData.getAll("fitment_generation");
+  const engs = formData.getAll("fitment_engine");
+  const yStarts = formData.getAll("fitment_year_start");
+  const yEnds = formData.getAll("fitment_year_end");
 
-  if (makeId || modelId) {
-    const admin = createAdminClient();
-    if (productId) {
-      await admin
-        .from("product_compatibility")
-        .delete()
-        .eq("product_id", productId);
-    }
-    await admin.from("product_compatibility").insert({
+  const numOrNull = (v: FormDataEntryValue | undefined) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+
+  const fitments = makes
+    .map((_, i) => ({
       product_id: id,
-      make_id: makeId,
-      model_id: modelId,
-      generation_id: generationId,
-      engine_id: engineId,
-      year_start: yearStart,
-      year_end: yearEnd,
-    });
+      make_id: numOrNull(makes[i]),
+      model_id: numOrNull(models[i]),
+      generation_id: numOrNull(gens[i]),
+      engine_id: numOrNull(engs[i]),
+      year_start: numOrNull(yStarts[i]),
+      year_end: numOrNull(yEnds[i]),
+    }))
+    .filter(
+      (r) =>
+        r.make_id || r.model_id || r.generation_id || r.engine_id ||
+        r.year_start || r.year_end,
+    );
+
+  const admin2 = createAdminClient();
+  if (productId) {
+    await admin2
+      .from("product_compatibility")
+      .delete()
+      .eq("product_id", productId);
+  }
+  if (fitments.length) {
+    await admin2.from("product_compatibility").insert(fitments);
   }
 
   const imageUrl = String(formData.get("image_url") ?? "").trim();

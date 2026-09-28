@@ -274,3 +274,184 @@ export async function updateSourcingRequest(formData: FormData) {
   });
   revalidatePath("/admin/sourcing");
 }
+
+// ---------------------------------------------------------------------------
+// Vehicle catalogue import (makes / models / generations / engines)
+// ---------------------------------------------------------------------------
+
+export interface VehicleImportState {
+  error?: string;
+  ok?: boolean;
+  summary?: string;
+}
+
+/**
+ * Bulk-import vehicle taxonomy from CSV/Excel.
+ * Expected columns (header row, case-insensitive):
+ *   make, model, generation, year_start, year_end, engine, fuel_type, transmission
+ * make+model are required per row; generation/engine columns optional.
+ * Rows are upserted by name — re-running a file is safe.
+ */
+export async function importVehicleCatalogue(
+  _prev: VehicleImportState,
+  formData: FormData,
+): Promise<VehicleImportState> {
+  const { user, admin } = await requireAdmin();
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose a .csv or .xlsx file." };
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    return { error: "File too large (max 5 MB)." };
+  }
+
+  const XLSX = await import("xlsx");
+  let rows: Record<string, unknown>[];
+  try {
+    const wb = XLSX.read(await file.arrayBuffer());
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+  } catch {
+    return { error: "Could not parse file. Use CSV or Excel with a header row." };
+  }
+  if (!rows.length) return { error: "No rows found in the file." };
+
+  const norm = (k: string) =>
+    Object.keys(rows[0]).find(
+      (h) => h.trim().toLowerCase().replace(/[^a-z]/g, "") === k,
+    );
+  const col = {
+    make: norm("make"),
+    model: norm("model"),
+    generation: norm("generation") ?? norm("gen"),
+    yearStart: norm("yearstart") ?? norm("yearfrom"),
+    yearEnd: norm("yearend") ?? norm("yearto"),
+    engine: norm("engine"),
+    fuel: norm("fueltype") ?? norm("fuel"),
+    transmission: norm("transmission") ?? norm("gearbox"),
+  };
+  if (!col.make || !col.model) {
+    return {
+      error:
+        "Missing required columns. Expected: make, model [, generation, year_start, year_end, engine, fuel_type, transmission].",
+    };
+  }
+
+  const cell = (r: Record<string, unknown>, k?: string) =>
+    k ? String(r[k] ?? "").trim() : "";
+  const numCell = (r: Record<string, unknown>, k?: string) => {
+    const v = parseInt(cell(r, k), 10);
+    return Number.isFinite(v) ? v : null;
+  };
+
+  let makesN = 0, modelsN = 0, gensN = 0, enginesN = 0;
+  const errors: string[] = [];
+
+  for (const [i, raw] of rows.entries()) {
+    const make = cell(raw, col.make);
+    const model = cell(raw, col.model);
+    if (!make || !model) {
+      if (make || model) errors.push(`Row ${i + 2}: make or model missing`);
+      continue;
+    }
+
+    const { data: mk, error: mke } = await admin
+      .from("vehicle_makes")
+      .upsert({ name: make }, { onConflict: "name" })
+      .select("id")
+      .single();
+    if (mke) { errors.push(`Row ${i + 2}: ${mke.message}`); continue; }
+    makesN++;
+
+    const { data: existingModel } = await admin
+      .from("vehicle_models")
+      .select("id")
+      .eq("make_id", mk.id)
+      .ilike("name", model)
+      .limit(1);
+    let modelId = existingModel?.[0]?.id;
+    if (!modelId) {
+      const { data: md, error: mde } = await admin
+        .from("vehicle_models")
+        .insert({ make_id: mk.id, name: model })
+        .select("id")
+        .single();
+      if (mde) { errors.push(`Row ${i + 2}: ${mde.message}`); continue; }
+      modelId = md.id;
+      modelsN++;
+    }
+
+    const gen = cell(raw, col.generation);
+    if (gen) {
+      const { data: existingGen } = await admin
+        .from("vehicle_generations")
+        .select("id")
+        .eq("model_id", modelId)
+        .ilike("name", gen)
+        .limit(1);
+      let genId = existingGen?.[0]?.id;
+      if (!genId) {
+        const { data: g, error: ge } = await admin
+          .from("vehicle_generations")
+          .insert({
+            model_id: modelId,
+            name: gen,
+            year_start: numCell(raw, col.yearStart),
+            year_end: numCell(raw, col.yearEnd),
+          })
+          .select("id")
+          .single();
+        if (ge) { errors.push(`Row ${i + 2}: ${ge.message}`); continue; }
+        genId = g.id;
+        gensN++;
+      }
+
+      const engine = cell(raw, col.engine);
+      if (engine) {
+        const { data: existingEng } = await admin
+          .from("vehicle_engines")
+          .select("id")
+          .eq("generation_id", genId)
+          .ilike("name", engine)
+          .limit(1);
+        if (!existingEng?.length) {
+          const { error: ee } = await admin.from("vehicle_engines").insert({
+            generation_id: genId,
+            model_id: modelId,
+            name: engine,
+            fuel_type: cell(raw, col.fuel) || null,
+            transmission: cell(raw, col.transmission) || null,
+          });
+          if (ee) errors.push(`Row ${i + 2}: ${ee.message}`);
+          else enginesN++;
+        }
+      }
+    }
+  }
+
+  revalidateTag("vehicle-taxonomy", "max");
+  revalidatePath("/admin/system");
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_role: "admin",
+    action: "vehicle_catalogue_import",
+    entity_type: "vehicle_taxonomy",
+    entity_id: null,
+    new_state: {
+      file: file.name,
+      rows: rows.length,
+      makes: makesN,
+      models: modelsN,
+      generations: gensN,
+      engines: enginesN,
+      errors: errors.slice(0, 10),
+    },
+  });
+
+  return {
+    ok: true,
+    summary: `Processed ${rows.length} rows: ${makesN} makes, ${modelsN} new models, ${gensN} new generations, ${enginesN} new engines.` +
+      (errors.length ? ` ${errors.length} row error(s): ${errors.slice(0, 3).join("; ")}` : ""),
+  };
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useState } from "react";
 import { uploadProductImage } from "@/lib/supabase/storage";
 import { saveProduct, type VendorActionState } from "../actions";
 import { Button } from "@/components/ui/button";
@@ -38,34 +38,23 @@ export function ProductForm({
     FormData
   >(saveProduct, {});
 
-  const initialCompat = product?.product_compatibility?.[0];
   const existingImage = product?.product_images?.sort(
     (a: any, b: any) => a.sort_order - b.sort_order,
   )?.[0]?.url;
   const [imageUrl, setImageUrl] = useState<string>(existingImage ?? "");
   const [uploading, setUploading] = useState(false);
-  const [makeId, setMakeId] = useState<number | "">(initialCompat?.make_id ?? "");
-  const [modelId, setModelId] = useState<number | "">(initialCompat?.model_id ?? "");
-  const [generationId, setGenerationId] = useState<number | "">(
-    initialCompat?.generation_id ?? "",
-  );
 
-  const modelOpts = useMemo(
-    () => models.filter((m) => !makeId || m.make_id === makeId),
-    [models, makeId],
-  );
-  const genOpts = useMemo(
-    () => generations.filter((g) => !modelId || g.model_id === modelId),
-    [generations, modelId],
-  );
-  const engOpts = useMemo(
-    () =>
-      engines.filter(
-        (e) =>
-          (!generationId || e.generation_id === generationId) &&
-          (!modelId || !e.model_id || e.model_id === modelId),
-      ),
-    [engines, generationId, modelId],
+  const [fitments, setFitments] = useState<FitmentRow[]>(
+    (product?.product_compatibility?.length
+      ? product.product_compatibility.map((c: any) => ({
+          make_id: c.make_id ?? "",
+          model_id: c.model_id ?? "",
+          generation_id: c.generation_id ?? "",
+          engine_id: c.engine_id ?? "",
+          year_start: c.year_start ?? "",
+          year_end: c.year_end ?? "",
+        }))
+      : [emptyFitment]),
   );
 
   return (
@@ -191,88 +180,39 @@ export function ProductForm({
         <legend className="px-1 text-sm font-semibold text-ink-900">
           Vehicle compatibility
         </legend>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Make">
-            <Select
-              name="make_id"
-              value={makeId}
-              onChange={(e) => {
-                setMakeId(e.target.value ? Number(e.target.value) : "");
-                setModelId("");
-                setGenerationId("");
-              }}
-            >
-              <option value="">Any</option>
-              {makes.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Model">
-            <Select
-              name="model_id"
-              value={modelId}
-              onChange={(e) => {
-                setModelId(e.target.value ? Number(e.target.value) : "");
-                setGenerationId("");
-              }}
-            >
-              <option value="">Any</option>
-              {modelOpts.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Generation">
-            <Select
-              name="generation_id"
-              value={generationId}
-              onChange={(e) =>
-                setGenerationId(e.target.value ? Number(e.target.value) : "")
+        <p className="mb-3 text-xs text-ink-500">
+          Add every vehicle this part fits. Leave a row empty for universal
+          parts.
+        </p>
+        <div className="flex flex-col gap-4">
+          {fitments.map((f, i) => (
+            <FitmentFields
+              key={i}
+              row={f}
+              index={i}
+              removable={fitments.length > 1}
+              onRemove={() =>
+                setFitments((rows) => rows.filter((_, ri) => ri !== i))
               }
-            >
-              <option value="">Any</option>
-              {genOpts.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Engine">
-            <Select
-              name="engine_id"
-              defaultValue={initialCompat?.engine_id ?? ""}
-            >
-              <option value="">Any</option>
-              {engOpts.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Year from">
-            <Input
-              name="year_start"
-              type="number"
-              placeholder="2007"
-              defaultValue={initialCompat?.year_start ?? ""}
+              onChange={(patch) =>
+                setFitments((rows) =>
+                  rows.map((r, ri) => (ri === i ? { ...r, ...patch } : r)),
+                )
+              }
+              makes={makes}
+              models={models}
+              generations={generations}
+              engines={engines}
             />
-          </Field>
-          <Field label="Year to">
-            <Input
-              name="year_end"
-              type="number"
-              placeholder="2014"
-              defaultValue={initialCompat?.year_end ?? ""}
-            />
-          </Field>
+          ))}
         </div>
+        <button
+          type="button"
+          onClick={() => setFitments((rows) => [...rows, { ...emptyFitment }])}
+          className="tap mt-3 rounded-lg border border-dashed border-brand-300 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-800 hover:bg-brand-100"
+        >
+          + Add another vehicle
+        </button>
       </fieldset>
 
       <div className="flex gap-6">
@@ -306,5 +246,178 @@ export function ProductForm({
         {pending ? "Saving…" : product ? "Save changes" : "Publish listing"}
       </Button>
     </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Multi-fitment rows — one vehicle per row, add/remove as needed. Submitted as
+// parallel arrays (fitment_make[], fitment_model[], …) which FormData.getAll
+// preserves in order.
+// ---------------------------------------------------------------------------
+
+interface FitmentRow {
+  make_id: number | "";
+  model_id: number | "";
+  generation_id: number | "";
+  engine_id: number | "";
+  year_start: number | "";
+  year_end: number | "";
+}
+
+const emptyFitment: FitmentRow = {
+  make_id: "",
+  model_id: "",
+  generation_id: "",
+  engine_id: "",
+  year_start: "",
+  year_end: "",
+};
+
+function FitmentFields({
+  row,
+  index,
+  removable,
+  onRemove,
+  onChange,
+  makes,
+  models,
+  generations,
+  engines,
+}: {
+  row: FitmentRow;
+  index: number;
+  removable: boolean;
+  onRemove: () => void;
+  onChange: (patch: Partial<FitmentRow>) => void;
+  makes: Opt[];
+  models: Opt[];
+  generations: Opt[];
+  engines: Opt[];
+}) {
+  const modelOpts = models.filter((m) => !row.make_id || m.make_id === row.make_id);
+  const genOpts = generations.filter(
+    (g) => !row.model_id || g.model_id === row.model_id,
+  );
+  const engOpts = engines.filter(
+    (e) =>
+      (!row.generation_id || e.generation_id === row.generation_id) &&
+      (!row.model_id || !e.model_id || e.model_id === row.model_id),
+  );
+
+  const sel =
+    "h-10 w-full rounded-lg border border-surface-300 bg-white px-2 text-sm text-ink-900";
+
+  return (
+    <div className="rounded-lg border border-surface-200 bg-surface-50 p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wide text-ink-500">
+          Vehicle {index + 1}
+        </span>
+        {removable ? (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="tap text-xs font-medium text-red-600 hover:text-red-800"
+          >
+            Remove
+          </button>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <select
+          name="fitment_make"
+          aria-label="Make"
+          value={row.make_id}
+          onChange={(e) => {
+            const v = e.target.value ? Number(e.target.value) : "";
+            onChange({ make_id: v, model_id: "", generation_id: "", engine_id: "" });
+          }}
+          className={sel}
+        >
+          <option value="">Any make</option>
+          {makes.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+        <select
+          name="fitment_model"
+          aria-label="Model"
+          value={row.model_id}
+          onChange={(e) => {
+            const v = e.target.value ? Number(e.target.value) : "";
+            onChange({ model_id: v, generation_id: "", engine_id: "" });
+          }}
+          className={sel}
+        >
+          <option value="">Any model</option>
+          {modelOpts.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+        <select
+          name="fitment_generation"
+          aria-label="Generation"
+          value={row.generation_id}
+          onChange={(e) =>
+            onChange({
+              generation_id: e.target.value ? Number(e.target.value) : "",
+              engine_id: "",
+            })
+          }
+          className={sel}
+        >
+          <option value="">Any generation</option>
+          {genOpts.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
+        </select>
+        <select
+          name="fitment_engine"
+          aria-label="Engine"
+          value={row.engine_id}
+          onChange={(e) =>
+            onChange({
+              engine_id: e.target.value ? Number(e.target.value) : "",
+            })
+          }
+          className={sel}
+        >
+          <option value="">Any engine</option>
+          {engOpts.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.name}
+            </option>
+          ))}
+        </select>
+        <Input
+          name="fitment_year_start"
+          type="number"
+          placeholder="Year from — 2007"
+          value={row.year_start}
+          onChange={(e) =>
+            onChange({
+              year_start: e.target.value === "" ? "" : Number(e.target.value),
+            })
+          }
+        />
+        <Input
+          name="fitment_year_end"
+          type="number"
+          placeholder="Year to — 2014"
+          value={row.year_end}
+          onChange={(e) =>
+            onChange({
+              year_end: e.target.value === "" ? "" : Number(e.target.value),
+            })
+          }
+        />
+      </div>
+    </div>
   );
 }
