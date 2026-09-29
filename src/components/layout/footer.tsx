@@ -94,7 +94,7 @@ export function Footer() {
             className="tap hover:text-white"
           >
             © {new Date().getFullYear()} Carguvi. Harare, Zimbabwe. Developed
-            and Powered By Global Space Web.
+            and Powered By Global Space Web. +263 77 390 9307
           </a>
         </div>
       </div>
