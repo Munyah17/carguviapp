@@ -11,7 +11,7 @@ import {
 } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
 import { HeroSlider, type HeroSlide } from "@/components/home/hero-slider";
-import { PeekRail } from "@/components/home/peek-rail";
+import { PeekRail, PeekItem } from "@/components/home/peek-rail";
 import {
   IconCar,
   IconChevronRight,
@@ -307,7 +307,9 @@ export default async function HomePage() {
             </div>
             <PeekRail cols="sm:grid-cols-4">
               {products.slice(0, 6).map((p: any) => (
-                <ProductCard key={p.id} product={p} />
+                <PeekItem key={p.id}>
+                  <ProductCard product={p} />
+                </PeekItem>
               ))}
             </PeekRail>
           </section>
@@ -324,7 +326,9 @@ export default async function HomePage() {
             </div>
             <PeekRail cols="sm:grid-cols-3 lg:grid-cols-4">
               {verified.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <PeekItem key={p.id}>
+                  <ProductCard product={p} />
+                </PeekItem>
               ))}
             </PeekRail>
           </section>
