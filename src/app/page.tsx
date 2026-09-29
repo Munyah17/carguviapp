@@ -91,24 +91,24 @@ export default async function HomePage() {
                 <input
                   type="search"
                   name="q"
-                  placeholder="Part name, number or vehicle — e.g. Demio ZJ-VE engine"
-                  className="h-12 w-full rounded-xl bg-surface-50 pl-9 pr-3 text-base focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200 sm:text-sm"
+                  placeholder="Part name, number or vehicle…"
+                  className="h-11 w-full rounded-xl bg-surface-50 pl-9 pr-3 text-base focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200 sm:h-12 sm:text-sm"
                 />
               </div>
               <button
                 type="submit"
-                className="tap h-12 shrink-0 rounded-xl bg-brand-700 px-5 text-sm font-medium text-white hover:bg-brand-800"
+                className="tap h-11 shrink-0 rounded-xl bg-brand-700 px-5 text-sm font-medium text-white hover:bg-brand-800 sm:h-12"
               >
                 Search
               </button>
             </div>
-            {/* Quick filters — the three questions buyers ask most */}
-            <div className="mt-2 grid grid-cols-3 gap-2 px-0.5">
+            {/* Quick filters — compact row, Advanced link sits inside */}
+            <div className="mt-2 flex items-center gap-2 px-0.5">
               <select
                 name="category_id"
                 defaultValue=""
                 aria-label="Category"
-                className="h-10 min-w-0 rounded-lg border border-surface-200 bg-white px-2 text-sm text-ink-700"
+                className="h-9 min-w-0 flex-1 rounded-lg border border-surface-200 bg-white px-2 text-xs text-ink-700"
               >
                 <option value="">All categories</option>
                 {categories.map((c: any) => (
@@ -121,7 +121,7 @@ export default async function HomePage() {
                 name="make_id"
                 defaultValue=""
                 aria-label="Vehicle make"
-                className="h-10 min-w-0 rounded-lg border border-surface-200 bg-white px-2 text-sm text-ink-700"
+                className="h-9 min-w-0 flex-1 rounded-lg border border-surface-200 bg-white px-2 text-xs text-ink-700"
               >
                 <option value="">Any make</option>
                 {makes.map((m: any) => (
@@ -134,7 +134,7 @@ export default async function HomePage() {
                 name="condition"
                 defaultValue=""
                 aria-label="Condition"
-                className="h-10 min-w-0 rounded-lg border border-surface-200 bg-white px-2 text-sm text-ink-700"
+                className="h-9 min-w-0 flex-1 rounded-lg border border-surface-200 bg-white px-2 text-xs text-ink-700"
               >
                 <option value="">Any condition</option>
                 <option value="new">New</option>
@@ -145,9 +145,9 @@ export default async function HomePage() {
             <div className="mt-1 flex justify-end">
               <Link
                 href="/search"
-                className="tap px-1 text-xs font-medium text-brand-700 hover:text-brand-800"
+                className="tap px-1 py-0.5 text-xs font-medium text-brand-700 hover:text-brand-800"
               >
-                Advanced search — filter by engine, year, price, area &amp; more →
+                Advanced search →
               </Link>
             </div>
           </form>
