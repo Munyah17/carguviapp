@@ -49,7 +49,7 @@ export function ProductCard({
       <div className="flex min-w-0 flex-1 flex-col p-2.5">
         <Link
           href={`/products/${product.id}`}
-          className="tap line-clamp-2 h-10 text-sm font-medium leading-snug text-ink-900 hover:text-brand-800"
+          className="tap line-clamp-2 h-10 text-sm font-semibold leading-snug text-ink-900 hover:text-brand-800"
         >
           {product.title}
         </Link>
@@ -58,7 +58,7 @@ export function ProductCard({
         </p>
         <p
           className={cn(
-            "mt-1 h-4 truncate text-xs leading-4",
+            "mt-1 h-8 line-clamp-2 text-xs leading-4",
             outOfStock ? "text-red-600" : "text-ink-500",
           )}
         >

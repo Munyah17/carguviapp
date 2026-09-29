@@ -74,7 +74,7 @@ export async function Header() {
           </Link>
           <Link
             href={user ? "/account" : "/auth/sign-in"}
-            className="tap hidden rounded-lg border border-surface-300 px-3.5 py-1.5 text-sm font-medium text-ink-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 sm:block"
+            className="tap hidden rounded-lg border border-surface-300 px-3.5 py-1.5 text-sm font-medium text-ink-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 sm:ml-2 sm:block"
           >
             {user ? "Account" : "Sign in"}
           </Link>
