@@ -31,7 +31,7 @@ export function PeekRail({
   return (
     <div
       ref={ref}
-      className={`-mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-[24%] pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 ${cols}`}
+      className={`-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-[25vw] pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 ${cols}`}
     >
       {children}
     </div>
@@ -41,7 +41,7 @@ export function PeekRail({
 /** Each carousel item — wrap every card in this so widths are explicit. */
 export function PeekItem({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-[54%] shrink-0 snap-center sm:w-auto sm:shrink">
+    <div className="w-[50vw] shrink-0 snap-center sm:w-auto sm:shrink">
       {children}
     </div>
   );
