@@ -81,7 +81,7 @@ export async function Header() {
           {!user ? (
             <Link
               href="/auth/register"
-              className="tap ml-1 rounded-lg bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-800 sm:ml-4 sm:px-4 sm:py-2 sm:text-sm"
+              className="tap ml-1 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 sm:ml-4 sm:px-5 sm:py-2.5 sm:text-base"
             >
               Get Started
             </Link>
