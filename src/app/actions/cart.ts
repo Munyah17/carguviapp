@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { ensureUser } from "@/lib/guest";
 import { revalidatePath } from "next/cache";
 
 async function getOrCreateCart(supabase: any, userId: string) {
@@ -23,9 +24,8 @@ async function getOrCreateCart(supabase: any, userId: string) {
 
 export async function addToCart(productId: string, quantity = 1) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Guests shop anonymously — the session upgrades to a full account on signup.
+  const user = await ensureUser(supabase);
   if (!user) return { error: "sign_in_required" };
 
   const { data: product } = await supabase

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -12,7 +12,7 @@ async function requireAdmin(superOnly = false) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const roles = await getUserRoles(user.id);
   const isSuper = roles.includes("super_admin");
   if (!isSuper && !roles.includes("admin")) redirect("/");
@@ -260,7 +260,7 @@ export async function updateSourcingRequest(formData: FormData) {
       user_id: req.user_id,
       type: "sourcing_quote",
       title: "Your quote is ready",
-      body: `${req.part_name}: ${payload.currency} ${quoteAmount} — ${payload.quote_timeline ?? "timeline on request"}.`,
+      body: `${req.part_name}: ${payload.currency} ${quoteAmount} â€” ${payload.quote_timeline ?? "timeline on request"}.`,
       data: { sourcing_request_id: id },
     });
   }
@@ -290,7 +290,7 @@ export interface VehicleImportState {
  * Expected columns (header row, case-insensitive):
  *   make, model, generation, year_start, year_end, engine, fuel_type, transmission
  * make+model are required per row; generation/engine columns optional.
- * Rows are upserted by name — re-running a file is safe.
+ * Rows are upserted by name â€” re-running a file is safe.
  */
 export async function importVehicleCatalogue(
   _prev: VehicleImportState,

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ export default async function AddressesPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/account/addresses");
+  if (!user) redirect("/login?next=/account/addresses");
 
   const { data: addresses } = await supabase
     .from("addresses")
@@ -77,7 +77,7 @@ export default async function AddressesPage() {
             <Input name="label" placeholder="Home / Work" />
           </Field>
           <Field label="Phone">
-            <Input name="phone" placeholder="+263 7…" />
+            <Input name="phone" placeholder="+263 7â€¦" />
           </Field>
         </div>
         <Field label="Street address">

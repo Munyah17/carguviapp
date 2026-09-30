@@ -3,6 +3,7 @@ import type { ProductListItem } from "@/lib/types";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { CardActions } from "./card-actions";
+import { IconPin } from "@/components/ui/icons";
 
 /**
  * Fixed-template commerce tile — every slot has a reserved height so cards in
@@ -65,6 +66,14 @@ export function ProductCard({
           {outOfStock
             ? "Currently unavailable"
             : product.description || product.vendor?.business_name || ""}
+        </p>
+        <p className="mt-1 flex h-4 items-center gap-1 text-xs leading-4 text-ink-400">
+          <IconPin className="h-3 w-3 shrink-0" />
+          <span className="truncate">
+            {[product.vendor?.operating_area, product.vendor?.city]
+              .filter(Boolean)
+              .join(", ") || "Harare"}
+          </span>
         </p>
         <div className="mt-auto pt-2">
           <CardActions productId={product.id} disabled={outOfStock} />

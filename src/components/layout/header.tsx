@@ -1,7 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getUserRoles } from "@/lib/queries";
+import { isGuest } from "@/lib/guest";
 import { IconCart } from "@/components/ui/icons";
 import { MobileMenu } from "./mobile-menu";
 
@@ -45,7 +46,7 @@ export async function Header() {
     <header className="sticky top-0 z-40 border-b border-surface-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <MobileMenu
-          signedIn={!!user}
+          signedIn={!!user && !isGuest(user)}
           isVendor={roles.includes("vendor")}
           isAdmin={roles.includes("admin") || roles.includes("super_admin")}
           isEnumerator={roles.includes("enumerator")}
@@ -73,12 +74,12 @@ export async function Header() {
             <IconCart className="h-5 w-5" />
           </Link>
           <Link
-            href={user ? "/account" : "/auth/sign-in"}
+            href={user && !isGuest(user) ? "/account" : "/login"}
             className="tap hidden rounded-lg border border-surface-300 px-3.5 py-1.5 text-sm font-medium text-ink-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 sm:ml-2 sm:block"
           >
-            {user ? "Account" : "Sign in"}
+            {user && !isGuest(user) ? "Account" : "Sign in"}
           </Link>
-          {!user ? (
+          {!user || isGuest(user) ? (
             <Link
               href="/auth/register"
               className="tap ml-1 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 sm:ml-4 sm:px-5 sm:py-2.5 sm:text-base"

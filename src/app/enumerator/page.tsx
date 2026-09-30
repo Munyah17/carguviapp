@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRoles } from "@/lib/queries";
@@ -13,7 +13,7 @@ export default async function EnumeratorDashboard() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/enumerator");
+  if (!user) redirect("/login?next=/enumerator");
   const roles = await getUserRoles(user.id);
   if (!roles.includes("enumerator") && !roles.includes("admin") && !roles.includes("super_admin")) {
     redirect("/");
@@ -47,7 +47,7 @@ export default async function EnumeratorDashboard() {
     <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Today&apos;s assignments</h1>
       <p className="mt-1 text-sm text-ink-500">
-        {byVendor.size} shops · {assigned.length} tasks ·{" "}
+        {byVendor.size} shops Â· {assigned.length} tasks Â·{" "}
         {done.length} completed
       </p>
 
@@ -85,7 +85,7 @@ export default async function EnumeratorDashboard() {
                       </p>
                       <p className="text-xs capitalize text-ink-400">
                         {t.task_type.replace(/_/g, " ")}
-                        {t.due_date ? ` · due ${t.due_date}` : ""}
+                        {t.due_date ? ` Â· due ${t.due_date}` : ""}
                       </p>
                     </div>
                     <Badge tone={t.status === "started" ? "blue" : "amber"}>

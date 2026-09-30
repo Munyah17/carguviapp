@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -66,7 +66,7 @@ export function MobileMenu({ signedIn, isVendor, isAdmin, isEnumerator }: Props)
       links: [
         signedIn
           ? { href: "/account", label: "Sign out (account page)" }
-          : { href: "/auth/sign-in", label: "Sign in" },
+          : { href: "/login", label: "Sign in" },
         { href: "/vendor/apply", label: "Sell on Carguvi" },
       ],
     },
@@ -88,10 +88,10 @@ export function MobileMenu({ signedIn, isVendor, isAdmin, isEnumerator }: Props)
       {open ? (
         <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div
-            className="absolute inset-0 bg-ink-950/50"
+            className="animate-fade-in absolute inset-0 bg-ink-950/50"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-white shadow-xl">
+          <div className="animate-slide-in-left absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-surface-100 px-4 py-3">
               <span className="text-base font-bold text-brand-900">Carguvi</span>
               <button

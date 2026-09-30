@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -20,7 +20,7 @@ export function CardActions({
       const res = await addToCart(productId, 1);
       if (res.error === "sign_in_required") {
         router.push(
-          `/auth/sign-in?next=${thenCheckout ? "/checkout" : `/products/${productId}`}`,
+          `/login?next=${thenCheckout ? "/checkout" : `/products/${productId}`}`,
         );
         return;
       }
@@ -40,7 +40,7 @@ export function CardActions({
         onClick={() => buy(false)}
         className="tap flex-1 rounded-lg border border-brand-200 bg-brand-50 py-1.5 text-xs font-semibold text-brand-800 disabled:opacity-50"
       >
-        {added ? "Added ✓" : "Add to cart"}
+        {added ? "Added âœ“" : "Add to cart"}
       </button>
       <button
         type="button"

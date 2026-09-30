@@ -1,4 +1,4 @@
-import type { MetadataRoute } from "next";
+﻿import type { MetadataRoute } from "next";
 import { isSupabaseConfigured } from "@/lib/env";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://carguviapp.vercel.app";
@@ -9,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/search",
     "/categories",
     "/garage",
-    "/auth/sign-in",
+    "/login",
     "/auth/register",
     "/vendor/apply",
   ].map((path) => ({ url: `${BASE}${path}`, changeFrequency: "daily" }));

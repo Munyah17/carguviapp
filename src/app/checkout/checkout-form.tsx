@@ -23,11 +23,15 @@ export function CheckoutForm({
   groups,
   addresses,
   subtotal,
+  defaultName,
+  defaultPhone,
   action,
 }: {
   groups: Group[];
   addresses: any[];
   subtotal: number;
+  defaultName?: string;
+  defaultPhone?: string;
   action: (fd: FormData) => Promise<{ error?: string }>;
 }) {
   const [pending, startTransition] = useTransition();
@@ -115,19 +119,76 @@ export function CheckoutForm({
         );
       })}
 
+      {/* Contact — required so vendors can coordinate (guests too) */}
+      <section className="rounded-xl border border-surface-200 bg-white p-4">
+        <h2 className="text-sm font-semibold text-ink-900">Your details</h2>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-ink-500">
+              Full name
+            </span>
+            <input
+              name="guest_name"
+              required
+              defaultValue={defaultName}
+              placeholder="e.g. Tendai Moyo"
+              className="h-11 w-full rounded-lg border border-surface-300 px-3 text-base sm:text-sm"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-ink-500">
+              Phone / WhatsApp
+            </span>
+            <input
+              name="guest_phone"
+              required
+              type="tel"
+              defaultValue={defaultPhone}
+              placeholder="e.g. 0772 000 000"
+              className="h-11 w-full rounded-lg border border-surface-300 px-3 text-base sm:text-sm"
+            />
+          </label>
+        </div>
+      </section>
+
       {/* Delivery address */}
       <section className="rounded-xl border border-surface-200 bg-white p-4">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-ink-900">
           <IconPin className="h-4 w-4 text-ink-400" /> Delivery address
         </h2>
         {addresses.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-500">
-            No saved addresses.{" "}
-            <a href="/account/addresses" className="text-brand-700 underline">
-              Add one
-            </a>{" "}
-            or choose pickup.
-          </p>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="block sm:col-span-2">
+              <span className="mb-1 block text-xs font-medium text-ink-500">
+                Street address
+              </span>
+              <input
+                name="addr_line1"
+                placeholder="e.g. 14 Mbuya Nehanda Close"
+                className="h-11 w-full rounded-lg border border-surface-300 px-3 text-base sm:text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-ink-500">
+                Suburb / area
+              </span>
+              <input
+                name="addr_area"
+                placeholder="e.g. Borrowdale"
+                className="h-11 w-full rounded-lg border border-surface-300 px-3 text-base sm:text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-ink-500">
+                City
+              </span>
+              <input
+                name="addr_city"
+                defaultValue="Harare"
+                className="h-11 w-full rounded-lg border border-surface-300 px-3 text-base sm:text-sm"
+              />
+            </label>
+          </div>
         ) : (
           <div className="mt-2 space-y-2">
             {addresses.map((a) => (

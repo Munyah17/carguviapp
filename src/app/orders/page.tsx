@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice, timeAgo } from "@/lib/format";
@@ -14,7 +14,7 @@ export default async function OrdersPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/orders");
+  if (!user) redirect("/login?next=/orders");
 
   const { data: orders } = await supabase
     .from("orders")
@@ -61,7 +61,7 @@ export default async function OrdersPage() {
                     .join(", ")}
                 </p>
                 <p className="mt-1 text-xs text-ink-400">
-                  {timeAgo(o.created_at)} ·{" "}
+                  {timeAgo(o.created_at)} Â·{" "}
                   {o.vendor_orders.reduce(
                     (s: number, vo: any) => s + vo.order_items.length,
                     0,

@@ -19,7 +19,7 @@ export default async function EditProductPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
 

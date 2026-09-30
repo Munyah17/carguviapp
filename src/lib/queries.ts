@@ -231,11 +231,12 @@ export async function getVendorProducts(vendorId: string): Promise<ProductListIt
 // so catalog pages don't hit the DB every render.
 export const getCategories = unstable_cache(
   async () => {
-    const { data } = await createPublicClient()
+    const { data, error } = await createPublicClient()
       .from("categories")
       .select("*")
       .is("parent_id", null)
       .order("sort_order");
+    if (error) throw error; // don't cache empty results from a transient outage
     return data ?? [];
   },
   ["categories"],
@@ -244,10 +245,11 @@ export const getCategories = unstable_cache(
 
 export const getVehicleMakes = unstable_cache(
   async () => {
-    const { data } = await createPublicClient()
+    const { data, error } = await createPublicClient()
       .from("vehicle_makes")
       .select("*")
       .order("name");
+    if (error) throw error;
     return data ?? [];
   },
   ["vehicle-makes"],
@@ -258,7 +260,8 @@ export const getVehicleModels = unstable_cache(
   async (makeId?: number) => {
     let q = createPublicClient().from("vehicle_models").select("*").order("name");
     if (makeId) q = q.eq("make_id", makeId);
-    const { data } = await q;
+    const { data, error } = await q;
+    if (error) throw error;
     return data ?? [];
   },
   ["vehicle-models"],
@@ -272,7 +275,8 @@ export const getVehicleGenerations = unstable_cache(
       .select("*")
       .order("year_start", { nullsFirst: false });
     if (modelId) q = q.eq("model_id", modelId);
-    const { data } = await q;
+    const { data, error } = await q;
+    if (error) throw error;
     return data ?? [];
   },
   ["vehicle-generations"],
@@ -283,7 +287,8 @@ export const getVehicleEngines = unstable_cache(
   async (generationId?: number) => {
     let q = createPublicClient().from("vehicle_engines").select("*").order("name");
     if (generationId) q = q.eq("generation_id", generationId);
-    const { data } = await q;
+    const { data, error } = await q;
+    if (error) throw error;
     return data ?? [];
   },
   ["vehicle-engines"],
@@ -348,11 +353,12 @@ export async function getCustomerVehicles(userId: string) {
 
 export const getHeroSlides = unstable_cache(
   async () => {
-    const { data } = await createPublicClient()
+    const { data, error } = await createPublicClient()
       .from("hero_slides")
       .select("*")
       .eq("is_active", true)
       .order("sort_order");
+    if (error) throw error;
     return data ?? [];
   },
   ["hero-slides"],

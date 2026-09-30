@@ -2,19 +2,52 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureUser } from "@/lib/guest";
 import { getPaymentProvider } from "@/lib/services/payments";
 import { getDeliveryProvider } from "@/lib/services/delivery";
 import { redirect } from "next/navigation";
 
 export async function placeOrder(formData: FormData): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Guests check out under an anonymous session.
+  const user = await ensureUser(supabase);
   if (!user) return { error: "sign_in_required" };
 
   const paymentMethod = String(formData.get("payment_method") ?? "cash_on_pickup");
-  const addressId = String(formData.get("address_id") ?? "") || null;
+  let addressId = String(formData.get("address_id") ?? "") || null;
+
+  // Guest contact details — vendors need a name and phone to coordinate.
+  const guestName = String(formData.get("guest_name") ?? "").trim();
+  const guestPhone = String(formData.get("guest_phone") ?? "").trim();
+  if (guestName || guestPhone) {
+    await supabase
+      .from("profiles")
+      .update({
+        full_name: guestName || undefined,
+        phone: guestPhone || undefined,
+      })
+      .eq("id", user.id);
+  }
+
+  // Inline address for guests / users with no saved addresses.
+  const line1 = String(formData.get("addr_line1") ?? "").trim();
+  if (!addressId && line1) {
+    const { data: addr } = await supabase
+      .from("addresses")
+      .insert({
+        user_id: user.id,
+        label: "Delivery address",
+        recipient_name: guestName || null,
+        phone: guestPhone || null,
+        line1,
+        area: String(formData.get("addr_area") ?? "").trim() || null,
+        city: String(formData.get("addr_city") ?? "").trim() || "Harare",
+        is_default: true,
+      })
+      .select("id")
+      .single();
+    addressId = addr?.id ?? null;
+  }
 
   // Load cart
   const { data: cart } = await supabase
@@ -96,6 +129,9 @@ export async function placeOrder(formData: FormData): Promise<{ error?: string }
 
     let deliveryFee = 0;
     if (fulfillment === "delivery") {
+      if (!addressId) {
+        return { error: "Enter a delivery address, or choose pickup." };
+      }
       const quote = await delivery.quote({
         originLat: loc?.latitude ?? null,
         originLng: loc?.longitude ?? null,

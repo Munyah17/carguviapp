@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   getVendorForUser,
@@ -16,7 +16,7 @@ export default async function NewProductPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
 

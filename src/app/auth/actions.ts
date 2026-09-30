@@ -22,6 +22,7 @@ export async function signIn(
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "");
+  const portal = String(formData.get("portal") ?? "customer");
 
   if (!email || !password) return { error: "Enter your email and password." };
 
@@ -33,6 +34,18 @@ export async function signIn(
   if (error) return { error: "Incorrect email or password." };
 
   const roles = await getUserRoles(data.user.id);
+
+  // Staff portals are role-gated — wrong portal = sign back out.
+  if (portal === "admin" && !roles.some((r) => r === "admin" || r === "super_admin")) {
+    await supabase.auth.signOut();
+    return { error: "This portal is for Carguvi administrators only." };
+  }
+  if (portal === "super" && !roles.includes("super_admin")) {
+    await supabase.auth.signOut();
+    return { error: "This portal is for super administrators only." };
+  }
+
+  if (portal === "admin" || portal === "super") redirect("/admin");
   redirect(next && next.startsWith("/") ? next : homeForRoles(roles));
 }
 

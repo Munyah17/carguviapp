@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,9 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Staff" };
 
 const STAFF_ROLES = [
-  ["manager", "Manager"],
+  ["shop_manager", "Shop Manager"],
   ["cashier", "Cashier"],
-  ["salesperson", "Salesperson"],
-  ["storekeeper", "Storekeeper"],
+  ["shop_assistant", "Shop Assistant"],
 ] as const;
 
 export default async function VendorStaffPage() {
@@ -21,7 +20,7 @@ export default async function VendorStaffPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
 
@@ -90,12 +89,32 @@ export default async function VendorStaffPage() {
           className="mt-6 flex flex-col gap-4 rounded-xl border border-surface-200 bg-white p-4"
         >
           <h2 className="font-semibold text-ink-900">Add employee</h2>
-          <Field
-            label="Carguvi account email"
-            hint="They must have a Carguvi account already."
-          >
-            <Input name="email" type="email" required />
-          </Field>
+          <p className="text-xs text-ink-500">
+            Creates a login for your employee — share the email and password with
+            them. If they already have a Carguvi account, it gets linked instead.
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Full name">
+              <Input name="full_name" placeholder="e.g. Rudo Chikore" />
+            </Field>
+            <Field label="Phone">
+              <Input name="phone" type="tel" placeholder="0772 000 000" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Email (login)">
+              <Input name="email" type="email" required />
+            </Field>
+            <Field label="Password (login)">
+              <Input
+                name="password"
+                type="text"
+                required
+                minLength={6}
+                placeholder="Set a password for them"
+              />
+            </Field>
+          </div>
           <Field label="Role">
             <Select name="staff_role">
               {STAFF_ROLES.map(([v, l]) => (

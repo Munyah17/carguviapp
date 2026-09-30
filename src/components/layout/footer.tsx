@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Logo } from "./header";
 
 const COLS: { title: string; links: { href: string; label: string }[] }[] = [
@@ -34,7 +34,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: "/account", label: "Account details" },
       { href: "/account/addresses", label: "Addresses" },
       { href: "/notifications", label: "Notifications" },
-      { href: "/auth/sign-in", label: "Sign in" },
+      { href: "/login", label: "Sign in" },
     ],
   },
 ];
@@ -93,7 +93,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="tap hover:text-white"
           >
-            © {new Date().getFullYear()} Carguvi. Harare, Zimbabwe. Developed
+            Â© {new Date().getFullYear()} Carguvi. Harare, Zimbabwe. Developed
             and Powered By Global Space Web. +263 77 390 9307
           </a>
         </div>

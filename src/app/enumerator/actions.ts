@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -12,7 +12,7 @@ async function requireEnumerator() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const roles = await getUserRoles(user.id);
   if (!roles.includes("enumerator") && !roles.includes("admin") && !roles.includes("super_admin")) {
     redirect("/");
@@ -85,7 +85,7 @@ export async function submitVerification(formData: FormData) {
     });
   }
 
-  // Carguvi confirmation stamp — the product's public freshness timestamp.
+  // Carguvi confirmation stamp â€” the product's public freshness timestamp.
   if (task.product_id) {
     await admin
       .from("products")

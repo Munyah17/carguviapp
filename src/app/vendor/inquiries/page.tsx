@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { timeAgo } from "@/lib/format";
@@ -12,7 +12,7 @@ export default async function VendorInquiriesPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
 
@@ -47,8 +47,8 @@ export default async function VendorInquiriesPage() {
             <p className="mt-1 text-sm text-ink-700">{i.message}</p>
             <p className="mt-1 text-xs text-ink-400">
               {timeAgo(i.created_at)}
-              {i.contact ? ` · ${i.contact}` : ""}
-              {i.profiles?.phone ? ` · ${i.profiles.phone}` : ""}
+              {i.contact ? ` Â· ${i.contact}` : ""}
+              {i.profiles?.phone ? ` Â· ${i.profiles.phone}` : ""}
             </p>
           </li>
         ))}

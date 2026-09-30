@@ -21,7 +21,7 @@ export function ProductActions({
     startTransition(async () => {
       const res = await addToCart(productId);
       if (res?.error === "sign_in_required") {
-        router.push(`/auth/sign-in?next=/products/${productId}`);
+        router.push(`/login?next=/products/${productId}`);
         return;
       }
       if (res?.error) return;

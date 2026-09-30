@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useActionState } from "react";
 import Link from "next/link";
@@ -29,10 +29,10 @@ export default function VendorApplyPage() {
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Phone">
-            <Input name="phone" type="tel" required placeholder="+263 7…" />
+            <Input name="phone" type="tel" required placeholder="+263 7â€¦" />
           </Field>
           <Field label="WhatsApp (optional)">
-            <Input name="whatsapp" type="tel" placeholder="+263 7…" />
+            <Input name="whatsapp" type="tel" placeholder="+263 7â€¦" />
           </Field>
         </div>
         <Field label="Email">
@@ -67,7 +67,7 @@ export default function VendorApplyPage() {
         </Field>
         <Field
           label="Business documents (optional)"
-          hint="Registration, trading licence or ID — speeds up verification. PDF or photo."
+          hint="Registration, trading licence or ID â€” speeds up verification. PDF or photo."
         >
           <input
             type="file"
@@ -85,7 +85,7 @@ export default function VendorApplyPage() {
               Register
             </Link>{" "}
             or{" "}
-            <Link href="/auth/sign-in?next=/vendor/apply" className="font-medium underline">
+            <Link href="/login?next=/vendor/apply" className="font-medium underline">
               sign in
             </Link>
             , then submit again.
@@ -97,7 +97,7 @@ export default function VendorApplyPage() {
         ) : null}
 
         <Button type="submit" size="lg" disabled={pending}>
-          {pending ? "Submitting…" : "Submit application"}
+          {pending ? "Submittingâ€¦" : "Submit application"}
         </Button>
       </form>
     </div>

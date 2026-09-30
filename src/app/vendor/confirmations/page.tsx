@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { daysSince, timeAgo, formatPrice } from "@/lib/format";
@@ -14,7 +14,7 @@ export default async function ConfirmationsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
 
@@ -44,7 +44,7 @@ export default async function ConfirmationsPage() {
     <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Confirm listings</h1>
       <p className="mt-1 text-sm text-ink-500">
-        Customers trust fresh listings. Confirm items that are still available —
+        Customers trust fresh listings. Confirm items that are still available â€”
         or mark them sold.
       </p>
 
@@ -91,7 +91,7 @@ export default async function ConfirmationsPage() {
                         {p.title}
                       </p>
                       <p className="mt-0.5 text-xs text-ink-500">
-                        {formatPrice(p.price)} · last confirmed{" "}
+                        {formatPrice(p.price)} Â· last confirmed{" "}
                         {timeAgo(p.seller_confirmed_at ?? p.seller_updated_at) ||
                           "never"}
                         {isHot ? (

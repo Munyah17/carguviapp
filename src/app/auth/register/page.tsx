@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useActionState } from "react";
 import Link from "next/link";
@@ -23,7 +23,7 @@ export default function RegisterPage() {
           <Input name="full_name" required autoComplete="name" />
         </Field>
         <Field label="Phone" hint="Used for order updates and pickup coordination.">
-          <Input name="phone" type="tel" autoComplete="tel" placeholder="+263 7…" />
+          <Input name="phone" type="tel" autoComplete="tel" placeholder="+263 7â€¦" />
         </Field>
         <Field label="Email">
           <Input name="email" type="email" required autoComplete="email" />
@@ -43,12 +43,12 @@ export default function RegisterPage() {
           </p>
         ) : null}
         <Button type="submit" size="lg" disabled={pending}>
-          {pending ? "Creating account…" : "Create account"}
+          {pending ? "Creating accountâ€¦" : "Create account"}
         </Button>
       </form>
       <p className="mt-6 text-center text-sm text-ink-500">
         Already have an account?{" "}
-        <Link href="/auth/sign-in" className="font-medium text-brand-700">
+        <Link href="/login" className="font-medium text-brand-700">
           Sign in
         </Link>
       </p>

@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/admin");
+  if (!user) redirect("/admin/login");
   const roles = await getUserRoles(user.id);
   const isAdmin = roles.includes("admin") || roles.includes("super_admin");
   if (!isAdmin) redirect("/");

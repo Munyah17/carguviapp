@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerVehicles } from "@/lib/queries";
@@ -14,7 +14,7 @@ export default async function GaragePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/garage");
+  if (!user) redirect("/login?next=/garage");
 
   const vehicles = await getCustomerVehicles(user.id);
 
@@ -54,7 +54,7 @@ export default async function GaragePage() {
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-ink-900">
                   {v.vehicle_makes?.name} {v.vehicle_models?.name}
-                  {v.year ? ` • ${v.year}` : ""}
+                  {v.year ? ` â€¢ ${v.year}` : ""}
                   {v.is_primary ? (
                     <span className="ml-2 text-xs font-medium text-brand-600">
                       Primary
@@ -64,8 +64,8 @@ export default async function GaragePage() {
                 <p className="truncate text-sm text-ink-500">
                   {[v.vehicle_generations?.name, v.vehicle_engines?.name]
                     .filter(Boolean)
-                    .join(" • ") || "All variants"}
-                  {v.nickname ? ` — ${v.nickname}` : ""}
+                    .join(" â€¢ ") || "All variants"}
+                  {v.nickname ? ` â€” ${v.nickname}` : ""}
                 </p>
               </div>
               <ButtonLink

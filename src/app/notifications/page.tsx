@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -13,7 +13,7 @@ export default async function NotificationsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/notifications");
+  if (!user) redirect("/login?next=/notifications");
 
   const { data: notifications } = await supabase
     .from("notifications")

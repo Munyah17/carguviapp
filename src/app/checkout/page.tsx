@@ -13,7 +13,9 @@ export default async function CheckoutPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/checkout");
+  // Guests check out under an anonymous session — no account required.
+  // Anyone without a session has no cart, so bounce to the empty cart page.
+  if (!user) redirect("/cart");
 
   const { data: cart } = await supabase
     .from("carts")
@@ -37,6 +39,12 @@ export default async function CheckoutPage() {
     : { data: [] };
 
   if (!items?.length) redirect("/cart");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, phone")
+    .eq("id", user.id)
+    .maybeSingle();
 
   const { data: addresses } = await supabase
     .from("addresses")
@@ -76,6 +84,8 @@ export default async function CheckoutPage() {
         groups={groupData}
         addresses={addresses ?? []}
         subtotal={subtotal}
+        defaultName={profile?.full_name ?? ""}
+        defaultPhone={profile?.phone ?? ""}
         action={placeOrder}
       />
     </div>

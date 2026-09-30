@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -17,7 +17,7 @@ async function requireVendor() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/vendor");
+  if (!user) redirect("/login?next=/vendor");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
   return { supabase, user, ...info };
@@ -92,7 +92,7 @@ export async function saveProduct(
   }
   if (!id) return { error: "Save failed." };
 
-  // Compatibility rows — parallel arrays, one vehicle fitment per row.
+  // Compatibility rows â€” parallel arrays, one vehicle fitment per row.
   const makes = formData.getAll("fitment_make");
   const models = formData.getAll("fitment_model");
   const gens = formData.getAll("fitment_generation");
@@ -222,7 +222,7 @@ export async function confirmListing(productId: string, response: "available" | 
   revalidatePath("/vendor");
 }
 
-/** Bulk confirm — the "Confirm all available" action. */
+/** Bulk confirm â€” the "Confirm all available" action. */
 export async function confirmAllListings(productIds: string[]) {
   for (const id of productIds) {
     await confirmListing(id, "available");
@@ -480,6 +480,43 @@ export async function savePickupLocation(formData: FormData) {
   revalidatePath("/vendor/settings");
 }
 
+/** Mark one branch as the primary pickup location. */
+export async function setPrimaryLocation(locationId: string) {
+  const { supabase, vendor } = await requireVendor();
+  await supabase
+    .from("vendor_locations")
+    .update({ is_primary: false })
+    .eq("vendor_id", vendor.id);
+  const { error } = await supabase
+    .from("vendor_locations")
+    .update({ is_primary: true })
+    .eq("id", locationId)
+    .eq("vendor_id", vendor.id);
+  if (error) throw error;
+  revalidatePath("/vendor/settings");
+}
+
+/** Remove a branch. The primary location can't be deleted. */
+export async function deleteLocation(locationId: string) {
+  const { supabase, vendor } = await requireVendor();
+  const { data: loc } = await supabase
+    .from("vendor_locations")
+    .select("is_primary")
+    .eq("id", locationId)
+    .eq("vendor_id", vendor.id)
+    .single();
+  if (loc?.is_primary) {
+    return { error: "Set another branch as primary before removing this one." };
+  }
+  const { error } = await supabase
+    .from("vendor_locations")
+    .delete()
+    .eq("id", locationId)
+    .eq("vendor_id", vendor.id);
+  if (error) throw error;
+  revalidatePath("/vendor/settings");
+}
+
 export async function setStaffActive(staffId: string, active: boolean) {
   const { supabase, user, vendor, staffRole } = await requireVendor();
   if (staffRole !== "owner") return;
@@ -501,23 +538,56 @@ export async function setStaffActive(staffId: string, active: boolean) {
   revalidatePath("/vendor/staff");
 }
 
+/**
+ * Create an employee login for the shop — vendor sets the credentials, we
+ * create the auth account (confirmed, no email needed), profile is auto-created
+ * by the handle_new_user trigger, then linked to the shop via vendor_staff.
+ */
 export async function addStaffMember(formData: FormData) {
-  const { vendor } = await requireVendor();
+  const { vendor, staffRole, user } = await requireVendor();
+  if (staffRole !== "owner" && staffRole !== "manager") {
+    return { error: "Only the owner or a manager can add staff." } as never;
+  }
   const admin = createAdminClient();
   const email = String(formData.get("email") ?? "").trim();
-  const staffRole = String(formData.get("staff_role") ?? "salesperson");
-  const { data: profile } = await admin
+  const password = String(formData.get("password") ?? "");
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const role = String(formData.get("staff_role") ?? "shop_assistant");
+
+  if (!email || !password) {
+    return { error: "Email and password are required." } as never;
+  }
+  if (password.length < 6) {
+    return { error: "Password must be at least 6 characters." } as never;
+  }
+
+  // Existing Carguvi account → just link it; otherwise create the login.
+  const { data: existing } = await admin
     .from("profiles")
     .select("id")
     .eq("email", email)
     .maybeSingle();
-  if (!profile) return { error: "No Carguvi account with that email." } as never;
+
+  let userId = existing?.id as string | undefined;
+  if (!userId) {
+    const { data: created, error: ce } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName, phone, role: "staff" },
+    });
+    if (ce || !created.user) {
+      return { error: ce?.message ?? "Could not create the account." } as never;
+    }
+    userId = created.user.id;
+  }
 
   await admin.from("vendor_staff").upsert(
     {
       vendor_id: vendor.id,
-      user_id: profile.id,
-      staff_role: staffRole,
+      user_id: userId,
+      staff_role: role,
       permissions: {
         manage_products: formData.get("perm_products") === "on",
         manage_orders: formData.get("perm_orders") === "on",
@@ -526,8 +596,14 @@ export async function addStaffMember(formData: FormData) {
     },
     { onConflict: "vendor_id,user_id" },
   );
-  await admin
-    .from("user_roles")
-    .upsert({ user_id: profile.id, role: "staff" });
+  await admin.from("user_roles").upsert({ user_id: userId, role: "staff" });
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_role: "vendor",
+    action: "staff_account_created",
+    entity_type: "vendor_staff",
+    entity_id: vendor.id,
+    new_state: { email, staff_role: role },
+  });
   revalidatePath("/vendor/staff");
 }

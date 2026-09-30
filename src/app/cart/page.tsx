@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { ButtonLink } from "@/components/ui/button";
@@ -15,15 +14,17 @@ export default async function CartPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/cart");
+  // Guests shop anonymously — no session just means the cart is empty.
 
-  const { data: cart } = await supabase
-    .from("carts")
-    .select("id")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  const { data: cart } = user
+    ? await supabase
+        .from("carts")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
 
   const { data: items } = cart
     ? await supabase

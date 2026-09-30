@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Field, Select, Textarea } from "@/components/ui/input";
@@ -14,7 +14,7 @@ export default async function NewReviewPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
 
   const { data: vendorOrder } = vo
     ? await supabase
@@ -46,7 +46,7 @@ export default async function NewReviewPage({
     <div className="mx-auto max-w-md px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Leave a review</h1>
       <p className="mt-1 text-sm text-ink-500">
-        {(vendorOrder.vendors as any)?.business_name} ·{" "}
+        {(vendorOrder.vendors as any)?.business_name} Â·{" "}
         {(vendorOrder.order_items as any[])
           .map((i) => i.title)
           .join(", ")}
@@ -68,7 +68,7 @@ export default async function NewReviewPage({
             <Select name="product_rating" required>
               {[5, 4, 3, 2, 1].map((r) => (
                 <option key={r} value={r}>
-                  {r} — {["Poor", "Fair", "Good", "Very good", "Excellent"][r - 1]}
+                  {r} â€” {["Poor", "Fair", "Good", "Very good", "Excellent"][r - 1]}
                 </option>
               ))}
             </Select>
@@ -77,7 +77,7 @@ export default async function NewReviewPage({
             <Select name="vendor_rating" required>
               {[5, 4, 3, 2, 1].map((r) => (
                 <option key={r} value={r}>
-                  {r} — {["Poor", "Fair", "Good", "Very good", "Excellent"][r - 1]}
+                  {r} â€” {["Poor", "Fair", "Good", "Very good", "Excellent"][r - 1]}
                 </option>
               ))}
             </Select>

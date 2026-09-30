@@ -17,7 +17,7 @@ export default async function VerificationTaskPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const roles = await getUserRoles(user.id);
   if (!roles.includes("enumerator") && !roles.includes("admin") && !roles.includes("super_admin")) {
     redirect("/");

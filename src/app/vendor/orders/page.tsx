@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { formatPrice, timeAgo } from "@/lib/format";
@@ -24,7 +24,7 @@ export default async function VendorOrdersPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
 
@@ -86,14 +86,14 @@ function Section({ title, orders }: { title: string; orders: any[] }) {
                 </Badge>
               </div>
               <p className="mt-1 text-xs text-ink-400">
-                {timeAgo(o.created_at)} ·{" "}
-                {o.fulfillment_type === "pickup" ? "Pickup" : "Carguvi Delivery"} ·{" "}
+                {timeAgo(o.created_at)} Â·{" "}
+                {o.fulfillment_type === "pickup" ? "Pickup" : "Carguvi Delivery"} Â·{" "}
                 {o.orders?.profiles?.full_name ?? "Customer"}
               </p>
               <ul className="mt-2 text-sm text-ink-700">
                 {o.order_items.map((i: any, idx: number) => (
                   <li key={idx}>
-                    {i.quantity} × {i.title}
+                    {i.quantity} Ã— {i.title}
                   </li>
                 ))}
               </ul>

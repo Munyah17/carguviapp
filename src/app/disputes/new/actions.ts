@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -10,7 +10,7 @@ export async function createDispute(formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
 
   const orderId = String(formData.get("order_id") ?? "") || null;
   const vendorOrderId = String(formData.get("vendor_order_id") ?? "") || null;

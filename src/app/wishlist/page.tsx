@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { toListItem } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
@@ -12,7 +12,7 @@ export default async function WishlistPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/wishlist");
+  if (!user) redirect("/login?next=/wishlist");
 
   const { data } = await supabase
     .from("product_favourites")

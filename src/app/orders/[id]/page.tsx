@@ -24,7 +24,7 @@ export default async function OrderDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/login");
 
   const { data: order } = await supabase
     .from("orders")

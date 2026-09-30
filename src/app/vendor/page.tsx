@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
@@ -41,7 +41,7 @@ export default async function VendorDashboard() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/vendor");
+  if (!user) redirect("/login?next=/vendor");
   const info = await getVendorForUser(user.id);
   if (!info?.vendor) redirect("/vendor/apply");
   const vendor = info.vendor;
@@ -233,7 +233,7 @@ export default async function VendorDashboard() {
                   className="flex items-center justify-between px-4 py-3"
                 >
                   <span className="text-sm text-ink-700">
-                    {o.order_items?.length ?? 0} item(s) ·{" "}
+                    {o.order_items?.length ?? 0} item(s) Â·{" "}
                     {o.fulfillment_type === "pickup" ? "Pickup" : "Delivery"}
                   </span>
                   <Badge tone="blue">{o.status.replace(/_/g, " ")}</Badge>
@@ -303,7 +303,7 @@ function Metric({
   return (
     <div>
       <p className="text-lg font-bold text-ink-900">
-        {value != null ? `${Math.round(value)}${suffix}` : "—"}
+        {value != null ? `${Math.round(value)}${suffix}` : "â€”"}
       </p>
       <p className="text-xs text-ink-500">{label}</p>
       {sub ? <p className="text-xs text-ink-400">{sub}</p> : null}

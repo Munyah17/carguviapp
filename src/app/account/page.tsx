@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRoles, getVendorForUser } from "@/lib/queries";
@@ -13,7 +13,7 @@ export default async function AccountPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/account");
+  if (!user) redirect("/login?next=/account");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -53,7 +53,7 @@ export default async function AccountPage() {
               <p className="text-xs text-brand-600">
                 {vendorInfo.staffRole === "owner"
                   ? "Vendor dashboard"
-                  : `Staff dashboard — ${vendorInfo.staffRole}`}
+                  : `Staff dashboard â€” ${vendorInfo.staffRole}`}
               </p>
             </div>
             <IconChevronRight className="h-5 w-5 text-brand-600" />

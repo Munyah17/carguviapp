@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   getVehicleMakes,
@@ -16,7 +16,7 @@ export default async function AddVehiclePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/garage/add");
+  if (!user) redirect("/login?next=/garage/add");
 
   const [makes, models, generations, engines] = await Promise.all([
     getVehicleMakes(),

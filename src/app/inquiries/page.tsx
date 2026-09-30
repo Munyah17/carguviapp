@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/format";
@@ -16,7 +16,7 @@ export default async function InquiriesPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/sign-in?next=/inquiries");
+  if (!user) redirect("/login?next=/inquiries");
 
   const { data: inquiries } = await supabase
     .from("inquiries")
@@ -34,7 +34,7 @@ export default async function InquiriesPage({
       </div>
       {sent ? (
         <p className="mt-3 rounded-lg bg-trust-50 px-3 py-2 text-sm text-trust-700">
-          Inquiry sent — the vendor has been notified.
+          Inquiry sent â€” the vendor has been notified.
         </p>
       ) : null}
       <ul className="mt-4 space-y-3">
