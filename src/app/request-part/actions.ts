@@ -18,6 +18,26 @@ export async function submitSourcingRequest(_prev: { error?: string }, formData:
   if (!contact) return { error: "We need a phone number, WhatsApp or email to send your quotation." };
 
   const admin = createAdminClient();
+
+  // Photos: vehicle + part shots go to the public sourcing-photos bucket.
+  async function uploadPhoto(field: string): Promise<string | null> {
+    const file = formData.get(field);
+    if (!(file instanceof File) || file.size === 0) return null;
+    if (file.size > 8 * 1024 * 1024) return null; // 8MB cap
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const path = `${user?.id ?? "guest"}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await admin.storage
+      .from("sourcing-photos")
+      .upload(path, file);
+    if (upErr) return null;
+    const { data } = admin.storage.from("sourcing-photos").getPublicUrl(path);
+    return data.publicUrl;
+  }
+  const [vehiclePhoto, partPhoto] = await Promise.all([
+    uploadPhoto("vehicle_photo"),
+    uploadPhoto("part_photo"),
+  ]);
+
   const { error } = await admin.from("sourcing_requests").insert({
     user_id: user?.id ?? null,
     name: String(formData.get("name") ?? "") || null,
@@ -29,6 +49,8 @@ export async function submitSourcingRequest(_prev: { error?: string }, formData:
     quantity: Math.max(1, Number(formData.get("quantity")) || 1),
     notes: String(formData.get("notes") ?? "") || null,
     source_pref: String(formData.get("source") ?? "any"),
+    vehicle_photo_url: vehiclePhoto,
+    part_photo_url: partPhoto,
   });
   if (error) return { error: error.message };
 

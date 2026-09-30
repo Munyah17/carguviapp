@@ -26,9 +26,10 @@ export default async function RequestPartPage({
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-ink-600">
         Tell us the part you need. Carguvi imports from{" "}
-        <strong>South Africa</strong>, <strong>Dubai</strong> and{" "}
-        <strong>China</strong> — we&apos;ll come back to you with a quotation
-        and delivery timeline <strong>within 48 hours</strong>.
+        <strong>South Africa</strong>, <strong>Dubai</strong>,{" "}
+        <strong>China</strong> and <strong>Japan</strong> — we&apos;ll come back
+        to you with a quotation and delivery timeline{" "}
+        <strong>within 48 hours</strong>.
       </p>
 
       <div className="mt-5 rounded-2xl border border-surface-200 bg-white p-5">
@@ -45,13 +46,21 @@ export default async function RequestPartPage({
         </li>
         <li className="flex gap-2">
           <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600" />
-          Pay only after you accept our quotation — no obligations.
-        </li>
-        <li className="flex gap-2">
-          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600" />
-          Typical timelines: SA 3–7 days, Dubai 7–14 days, China 14–30 days.
+          Pay only after you accept our quotation — no obligations, no account
+          needed.
         </li>
       </ul>
+      <div className="mt-4 rounded-xl border border-surface-200 bg-white p-4">
+        <p className="text-sm font-semibold text-ink-900">
+          Estimated delivery timelines
+        </p>
+        <ul className="mt-2 space-y-1 text-sm text-ink-600">
+          <li>South Africa — 3–14 days</li>
+          <li>Dubai — 7–21 days</li>
+          <li>China — 4–12 weeks</li>
+          <li>Japan — 4–12 weeks</li>
+        </ul>
+      </div>
     </div>
   );
 }

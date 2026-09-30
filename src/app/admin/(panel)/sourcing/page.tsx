@@ -21,9 +21,10 @@ const STATUS: Record<string, { label: string; tone: string }> = {
 };
 
 const SOURCE_LABEL: Record<string, string> = {
-  south_africa: "South Africa",
-  dubai: "Dubai",
-  china: "China",
+  south_africa: "South Africa (3–14d)",
+  dubai: "Dubai (7–21d)",
+  china: "China (4–12wk)",
+  japan: "Japan (4–12wk)",
   any: "Fastest",
 };
 
@@ -96,6 +97,28 @@ export default async function AdminSourcingPage() {
                     <p className="mt-2 rounded-lg bg-surface-50 p-2 text-sm text-ink-600">
                       {r.notes}
                     </p>
+                  ) : null}
+                  {r.vehicle_photo_url || r.part_photo_url ? (
+                    <div className="mt-2 flex gap-2">
+                      {[r.vehicle_photo_url, r.part_photo_url]
+                        .filter(Boolean)
+                        .map((url: string) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noopener"
+                            className="tap"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt="Request photo"
+                              className="h-20 w-20 rounded-lg border border-surface-200 object-cover"
+                            />
+                          </a>
+                        ))}
+                    </div>
                   ) : null}
 
                   <form

@@ -1434,6 +1434,7 @@ export type Database = {
           notes: string | null
           part_name: string
           part_number: string | null
+          part_photo_url: string | null
           quantity: number
           quote_amount: number | null
           quote_timeline: string | null
@@ -1442,6 +1443,7 @@ export type Database = {
           updated_at: string
           user_id: string | null
           vehicle_description: string | null
+          vehicle_photo_url: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -1454,6 +1456,7 @@ export type Database = {
           notes?: string | null
           part_name: string
           part_number?: string | null
+          part_photo_url?: string | null
           quantity?: number
           quote_amount?: number | null
           quote_timeline?: string | null
@@ -1462,6 +1465,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           vehicle_description?: string | null
+          vehicle_photo_url?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -1474,6 +1478,7 @@ export type Database = {
           notes?: string | null
           part_name?: string
           part_number?: string | null
+          part_photo_url?: string | null
           quantity?: number
           quote_amount?: number | null
           quote_timeline?: string | null
@@ -1482,6 +1487,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           vehicle_description?: string | null
+          vehicle_photo_url?: string | null
         }
         Relationships: [
           {
@@ -2392,3 +2398,4 @@ export const Constants = {
     },
   },
 } as const
+
