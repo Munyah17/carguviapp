@@ -81,3 +81,11 @@ body {
 }
 .animate-slide-in-left { animation: slide-in-left 0.22s ease-out both; }
 .animate-fade-in { animation: fade-in 0.18s ease-out both; }
+
+/* Pointer hand on interactive elements */
+a, button, [role="button"], label[for], select, summary, input[type="submit"], input[type="checkbox"], input[type="radio"], input[type="file"] {
+  cursor: pointer;
+}
+a[aria-disabled="true"], button:disabled {
+  cursor: not-allowed;
+}
