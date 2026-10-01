@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 export interface AuthFormState {
   error?: string;
+  message?: string;
 }
 
 function homeForRoles(roles: string[]): string {
@@ -66,13 +67,32 @@ export async function signUp(
   }
 
   const supabase = await createClient();
+
+  // A guest may already hold an anonymous session — drop it before signing up
+  // so the new account isn't blocked or silently linked to the guest.
+  const {
+    data: { user: existing },
+  } = await supabase.auth.getUser();
+  if (existing?.is_anonymous) await supabase.auth.signOut();
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { full_name: fullName, phone, role: "customer" } },
   });
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.message.toLowerCase().includes("already registered")) {
+      return { error: "That email already has an account — sign in instead." };
+    }
+    return { error: error.message };
+  }
   if (!data.user) return { error: "Could not create account." };
+
+  // If the project requires email confirmation there's no session — tell the
+  // user to verify rather than landing them logged-out on the homepage.
+  if (!data.session) {
+    return { message: "Account created. Check your email to confirm, then sign in." };
+  }
 
   redirect("/");
 }

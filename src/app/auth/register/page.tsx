@@ -42,6 +42,11 @@ export default function RegisterPage() {
             {state.error}
           </p>
         ) : null}
+        {state.message ? (
+          <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+            {state.message}
+          </p>
+        ) : null}
         <Button type="submit" size="lg" disabled={pending}>
           {pending ? "Creating accountâ€¦" : "Create account"}
         </Button>
