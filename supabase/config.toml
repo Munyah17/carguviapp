@@ -237,6 +237,16 @@ enable_confirmations = false
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
+
+# Branded Carguvi email templates. For hosted Supabase, paste the same HTML
+# from supabase/templates/ into Dashboard → Authentication → Email Templates.
+[auth.email.template.confirmation]
+subject = "Activate your Carguvi account"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Carguvi password"
+content_path = "./supabase/templates/recovery.html"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).

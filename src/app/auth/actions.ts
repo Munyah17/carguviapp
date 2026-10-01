@@ -2,11 +2,22 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getUserRoles } from "@/lib/queries";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export interface AuthFormState {
   error?: string;
   message?: string;
+}
+
+/** Public origin of this deployment — used for auth email redirect targets. */
+async function siteOrigin(): Promise<string> {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  return host ? `${proto}://${host}` : "http://localhost:3000";
 }
 
 function homeForRoles(roles: string[]): string {
@@ -78,7 +89,12 @@ export async function signUp(
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName, phone, role: "customer" } },
+    options: {
+      data: { full_name: fullName, phone, role: "customer" },
+      // Confirmation link must land on THIS app — never Supabase's site_url
+      // default (localhost) — so pass the live origin explicitly.
+      emailRedirectTo: `${await siteOrigin()}/auth/confirm`,
+    },
   });
   if (error) {
     if (error.message.toLowerCase().includes("already registered")) {
