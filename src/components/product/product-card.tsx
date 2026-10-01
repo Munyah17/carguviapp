@@ -67,13 +67,13 @@ export function ProductCard({
             ? "Currently unavailable"
             : product.description || product.vendor?.business_name || ""}
         </p>
-        <p className="mt-1 flex h-4 items-center gap-1 text-xs leading-4 text-ink-400">
-          <IconPin className="h-3 w-3 shrink-0 text-brand-600" />
-          <span className="truncate">
+        <p className="mt-1 flex min-h-4 items-start gap-1 text-xs leading-4 text-ink-400">
+          <IconPin className="mt-0.5 h-3 w-3 shrink-0 text-brand-600" />
+          <span className="line-clamp-2">
             {[
               product.vendor?.business_name,
-              product.vendor?.operating_area,
-              product.vendor?.city ?? "Zimbabwe",
+              product.vendor?.operating_area?.replace(/\bstreet\b/gi, "St"),
+              (product.vendor?.city ?? "Zimbabwe").replace(/zimbabwe/i, "Zim"),
             ]
               .filter(Boolean)
               .join(", ")}

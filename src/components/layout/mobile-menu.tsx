@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
   signedIn: boolean;
@@ -85,8 +86,8 @@ export function MobileMenu({ signedIn, isVendor, isAdmin, isEnumerator }: Props)
         </svg>
       </button>
 
-      {open ? (
-        <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+      {open ? createPortal(
+        <div className="fixed inset-0 z-[100] sm:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div
             className="animate-fade-in absolute inset-0 bg-ink-950/50"
             onClick={() => setOpen(false)}
@@ -130,7 +131,8 @@ export function MobileMenu({ signedIn, isVendor, isAdmin, isEnumerator }: Props)
               ))}
             </nav>
           </div>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </>
   );
