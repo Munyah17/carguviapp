@@ -10,11 +10,11 @@ insert into auth.users (
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at
 ) values
   ('00000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'superadmin@carguvi.co.zw', crypt('password123', gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"Carguvi Super Admin","role":"super_admin"}', now(), now()),
+   'munyamuzvidziwa19@gmail.com', crypt('@@Griezmann177#$', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Munyah","phone":"+263773909307","role":"super_admin"}', now(), now()),
   ('00000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'admin@carguvi.co.zw', crypt('password123', gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"Tariro Chikafu","role":"admin"}', now(), now()),
+   'admin@carguviapp.com', crypt('@Lamineyamal19', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Admin1","phone":"+263770123456","role":"admin"}', now(), now()),
   ('00000000-0000-4000-8000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'enumerator@carguvi.co.zw', crypt('password123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Blessing Moyo","role":"enumerator"}', now(), now()),
@@ -46,7 +46,7 @@ select
   jsonb_build_object('sub', u.id::text, 'email', u.email),
   'email', now(), now(), now()
 from auth.users u
-where u.email like '%@carguvi.co.zw'
+where u.email like '%@carguvi.co.zw' or u.email like '%@carguviapp.com' or u.email like '%@gmail.com'
 on conflict do nothing;
 
 -- ---------------------------------------------------------------------------

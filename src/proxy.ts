@@ -37,7 +37,20 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Bootstrap an anonymous guest session on first visit so add-to-cart,
+  // checkout and order tracking work instantly — no sign-in wall.
+  if (!user) {
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      // Anonymous auth disabled on the project — leave the user as a pure
+      // guest; guest-capable flows must degrade gracefully.
+      console.warn("anonymous session bootstrap failed:", error.message);
+    }
+  }
 
   return response;
 }

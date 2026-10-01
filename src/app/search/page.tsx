@@ -16,6 +16,7 @@ import { getAIProvider } from "@/lib/services/ai";
 import { PhotoSearchButton } from "./photo-search";
 import { MyVehicleSelect, type GarageVehicle } from "./my-vehicle";
 import { isSupabaseConfigured } from "@/lib/env";
+import { formatPrice } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -444,13 +445,81 @@ export default async function SearchPage({
           </p>
         </div>
       ) : (
-        <div className="mt-4 grid grid-cols-2 gap-2.5 pb-10 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-          {results.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        <>
+          {/* Mobile: eBay/Alibaba-style single-column list rows */}
+          <ul className="mt-3 flex flex-col divide-y divide-surface-200 pb-10 sm:hidden">
+            {results.map((p) => (
+              <SearchResultRow key={p.id} product={p} />
+            ))}
+          </ul>
+          {/* Desktop/tablet: card grid */}
+          <div className="mt-4 hidden grid-cols-3 gap-3 pb-10 sm:grid lg:grid-cols-4">
+            {results.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </>
       )}
     </div>
+  );
+}
+
+/** Horizontal list row for mobile results — eBay/Alibaba pattern. */
+function SearchResultRow({ product: p }: { product: any }) {
+  const outOfStock = p.availability === "out_of_stock";
+  return (
+    <li>
+      <Link href={`/products/${p.id}`} className="tap flex gap-3 py-3">
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-100">
+          {p.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={p.image_url}
+              alt={p.title}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-[10px] text-ink-400">
+              No image
+            </div>
+          )}
+          {outOfStock ? (
+            <span className="absolute inset-x-0 bottom-0 bg-red-600/85 py-0.5 text-center text-[9px] font-semibold text-white">
+              Out of stock
+            </span>
+          ) : null}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-2 text-sm font-medium leading-snug text-ink-900">
+            {p.title}
+          </p>
+          <p className="mt-1 text-base font-bold text-ink-900">
+            {formatPrice(p.price, p.currency)}
+          </p>
+          <p className="mt-0.5 truncate text-xs text-ink-400">
+            {[
+              p.vendor?.business_name,
+              p.vendor?.operating_area,
+              p.vendor?.city ?? "Zimbabwe",
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+          <div className="mt-1 flex items-center gap-2 text-[11px]">
+            {p.pickup_available ? (
+              <span className="text-trust-700">Pickup</span>
+            ) : null}
+            {p.delivery_available ? (
+              <span className="text-brand-700">Delivery</span>
+            ) : null}
+            {p.condition ? (
+              <span className="capitalize text-ink-400">{p.condition}</span>
+            ) : null}
+          </div>
+        </div>
+      </Link>
+    </li>
   );
 }
 

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { VendorProfileForm } from "./settings-form";
 import { BranchManager } from "./location-form";
+import { ComplianceDocs } from "./compliance-form";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Store settings" };
@@ -39,6 +40,16 @@ export default async function VendorSettingsPage() {
         <div className="mt-3">
           <BranchManager locations={locations ?? []} />
         </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border border-surface-200 bg-white p-4">
+        <ComplianceDocs
+          documents={
+            Array.isArray(info.vendor.business_documents)
+              ? info.vendor.business_documents
+              : []
+          }
+        />
       </section>
     </div>
   );

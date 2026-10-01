@@ -68,11 +68,15 @@ export function ProductCard({
             : product.description || product.vendor?.business_name || ""}
         </p>
         <p className="mt-1 flex h-4 items-center gap-1 text-xs leading-4 text-ink-400">
-          <IconPin className="h-3 w-3 shrink-0" />
+          <IconPin className="h-3 w-3 shrink-0 text-brand-600" />
           <span className="truncate">
-            {[product.vendor?.operating_area, product.vendor?.city]
+            {[
+              product.vendor?.business_name,
+              product.vendor?.operating_area,
+              product.vendor?.city ?? "Zimbabwe",
+            ]
               .filter(Boolean)
-              .join(", ") || "Harare"}
+              .join(", ")}
           </span>
         </p>
         <div className="mt-auto pt-2">

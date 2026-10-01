@@ -8,6 +8,7 @@ const items = [
   { href: "/vendor", label: "Dashboard", exact: true },
   { href: "/vendor/products", label: "Products" },
   { href: "/vendor/orders", label: "Orders" },
+  { href: "/vendor/deliveries", label: "Deliveries" },
   { href: "/vendor/confirmations", label: "Confirmations" },
   { href: "/vendor/staff", label: "Staff" },
   { href: "/vendor/settings", label: "Settings" },

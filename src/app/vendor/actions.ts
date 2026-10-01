@@ -517,6 +517,149 @@ export async function deleteLocation(locationId: string) {
   revalidatePath("/vendor/settings");
 }
 
+// --- Delivery fleet & tracking ---------------------------------------------
+
+export async function saveFleetVehicle(formData: FormData) {
+  const { supabase, vendor } = await requireVendor();
+  const id = String(formData.get("fleet_id") ?? "") || null;
+  const payload = {
+    vendor_id: vendor.id,
+    label: String(formData.get("label") ?? "").trim(),
+    fleet_type: String(formData.get("fleet_type") ?? "motorbike"),
+    registration: String(formData.get("registration") ?? "") || null,
+    driver_name: String(formData.get("driver_name") ?? "") || null,
+    driver_phone: String(formData.get("driver_phone") ?? "") || null,
+    tracker_device_id: String(formData.get("tracker_device_id") ?? "") || null,
+    is_active: formData.get("is_active") !== "off",
+  } as any;
+  if (!payload.label) return { error: "Give the vehicle/rider a name." } as never;
+  const { error } = id
+    ? await supabase.from("delivery_fleet").update(payload).eq("id", id).eq("vendor_id", vendor.id)
+    : await supabase.from("delivery_fleet").insert(payload);
+  if (error) return { error: error.message } as never;
+  revalidatePath("/vendor/deliveries");
+}
+
+export async function deleteFleetVehicle(fleetId: string) {
+  const { supabase, vendor } = await requireVendor();
+  await supabase
+    .from("delivery_fleet")
+    .delete()
+    .eq("id", fleetId)
+    .eq("vendor_id", vendor.id);
+  revalidatePath("/vendor/deliveries");
+}
+
+/** Dispatch an order to a fleet vehicle — creates the public tracking code. */
+export async function dispatchDelivery(formData: FormData) {
+  const { supabase, vendor } = await requireVendor();
+  const vendorOrderId = String(formData.get("vendor_order_id") ?? "");
+  const fleetId = String(formData.get("fleet_id") ?? "") || null;
+  const { makeTrackingCode } = await import("@/lib/services/tracking");
+
+  const { error } = await supabase.from("deliveries").upsert(
+    {
+      vendor_order_id: vendorOrderId,
+      vendor_id: vendor.id,
+      fleet_id: fleetId,
+      tracking_code: makeTrackingCode(),
+      status: "dispatched",
+      destination_text: String(formData.get("destination_text") ?? "") || null,
+      notes: String(formData.get("notes") ?? "") || null,
+    },
+    { onConflict: "vendor_order_id" },
+  );
+  if (error) return { error: error.message } as never;
+  revalidatePath("/vendor/deliveries");
+  revalidatePath("/vendor/orders");
+}
+
+/** Manual status/location update — fallback when the GPS tracker glitches. */
+export async function updateDelivery(formData: FormData) {
+  const { supabase, vendor } = await requireVendor();
+  const deliveryId = String(formData.get("delivery_id") ?? "");
+  const status = String(formData.get("status") ?? "") || null;
+  const note = String(formData.get("note") ?? "") || null;
+  const locationText = String(formData.get("location_text") ?? "") || null;
+  const eta = String(formData.get("estimated_arrival") ?? "") || null;
+
+  const { data: delivery } = await supabase
+    .from("deliveries")
+    .update({
+      ...(status ? { status: status as any } : {}),
+      ...(eta ? { estimated_arrival: eta } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", deliveryId)
+    .eq("vendor_id", vendor.id)
+    .select("id")
+    .single();
+  if (!delivery) return { error: "Delivery not found." } as never;
+
+  await supabase.from("delivery_events").insert({
+    delivery_id: deliveryId,
+    status: (status ?? null) as any,
+    location_text: locationText,
+    source: "manual",
+    note,
+  });
+  revalidatePath("/vendor/deliveries");
+}
+
+/**
+ * Optional compliance/business documents — strengthens the vendor's trust
+ * badge and unlocks higher-value sourcing/fulfillment. Never blocks selling.
+ */
+export async function uploadComplianceDoc(
+  _prev: VendorActionState,
+  formData: FormData,
+): Promise<VendorActionState> {
+  const { vendor, user } = await requireVendor();
+  const docType = String(formData.get("doc_type") ?? "").trim();
+  const file = formData.get("document");
+  if (!docType) return { error: "Choose a document type." };
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose a file to upload." };
+  }
+  if (file.size > 10 * 1024 * 1024) return { error: "Max file size is 10MB." };
+
+  const admin = createAdminClient();
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
+  const path = `${vendor.id}/${docType}-${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await admin.storage
+    .from("vendor-documents")
+    .upload(path, file);
+  if (upErr) return { error: upErr.message };
+
+  const { data: signed } = await admin.storage
+    .from("vendor-documents")
+    .createSignedUrl(path, 60 * 60 * 24 * 365);
+
+  const docs = Array.isArray(vendor.business_documents)
+    ? [...vendor.business_documents]
+    : [];
+  docs.push({
+    type: docType,
+    url: signed?.signedUrl ?? path,
+    name: file.name,
+    uploaded_at: new Date().toISOString(),
+  });
+  await admin
+    .from("vendors")
+    .update({ business_documents: docs })
+    .eq("id", vendor.id);
+  await admin.from("audit_logs").insert({
+    actor_id: user.id,
+    actor_role: "vendor",
+    action: "compliance_doc_uploaded",
+    entity_type: "vendor",
+    entity_id: vendor.id,
+    new_state: { doc_type: docType },
+  });
+  revalidatePath("/vendor/settings");
+  return { ok: true };
+}
+
 export async function setStaffActive(staffId: string, active: boolean) {
   const { supabase, user, vendor, staffRole } = await requireVendor();
   if (staffRole !== "owner") return;

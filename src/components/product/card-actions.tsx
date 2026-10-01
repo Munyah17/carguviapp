@@ -14,17 +14,17 @@ export function CardActions({
   const router = useRouter();
   const [pending, start] = useTransition();
   const [added, setAdded] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   const buy = (thenCheckout: boolean) =>
     start(async () => {
       const res = await addToCart(productId, 1);
-      if (res.error === "sign_in_required") {
-        router.push(
-          `/login?next=${thenCheckout ? "/checkout" : `/products/${productId}`}`,
-        );
+      if (res.error) {
+        // Never bounce guests to a login wall — surface the error inline.
+        setErr(res.error === "sign_in_required" ? "Could not add item — try again." : res.error);
+        setTimeout(() => setErr(null), 3000);
         return;
       }
-      if (res.error) return;
       if (thenCheckout) router.push("/checkout");
       else {
         setAdded(true);
@@ -33,7 +33,9 @@ export function CardActions({
     });
 
   return (
-    <div className="mt-1.5 flex gap-1.5">
+    <div className="mt-1.5">
+      {err ? <p className="mb-1 text-[11px] text-red-600">{err}</p> : null}
+      <div className="flex gap-1.5">
       <button
         type="button"
         disabled={disabled || pending}
@@ -50,6 +52,7 @@ export function CardActions({
       >
         Buy now
       </button>
+      </div>
     </div>
   );
 }

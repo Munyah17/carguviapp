@@ -437,37 +437,61 @@ export type Database = {
         Row: {
           address_id: string | null
           created_at: string
+          destination_text: string | null
           distance_km: number | null
+          estimated_arrival: string | null
           fee: number
+          fleet_id: string | null
           id: string
+          movement_doc_url: string | null
+          notes: string | null
+          origin_text: string | null
           provider: string
           status: Database["public"]["Enums"]["delivery_status"]
+          tracking_code: string | null
           tracking_note: string | null
           updated_at: string
+          vendor_id: string | null
           vendor_order_id: string
         }
         Insert: {
           address_id?: string | null
           created_at?: string
+          destination_text?: string | null
           distance_km?: number | null
+          estimated_arrival?: string | null
           fee?: number
+          fleet_id?: string | null
           id?: string
+          movement_doc_url?: string | null
+          notes?: string | null
+          origin_text?: string | null
           provider?: string
           status?: Database["public"]["Enums"]["delivery_status"]
+          tracking_code?: string | null
           tracking_note?: string | null
           updated_at?: string
+          vendor_id?: string | null
           vendor_order_id: string
         }
         Update: {
           address_id?: string | null
           created_at?: string
+          destination_text?: string | null
           distance_km?: number | null
+          estimated_arrival?: string | null
           fee?: number
+          fleet_id?: string | null
           id?: string
+          movement_doc_url?: string | null
+          notes?: string | null
+          origin_text?: string | null
           provider?: string
           status?: Database["public"]["Enums"]["delivery_status"]
+          tracking_code?: string | null
           tracking_note?: string | null
           updated_at?: string
+          vendor_id?: string | null
           vendor_order_id?: string
         }
         Relationships: [
@@ -479,10 +503,115 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "deliveries_fleet_id_fkey"
+            columns: ["fleet_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_fleet"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "deliveries_vendor_order_id_fkey"
             columns: ["vendor_order_id"]
             isOneToOne: false
             referencedRelation: "vendor_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_events: {
+        Row: {
+          created_at: string
+          delivery_id: string
+          id: string
+          latitude: number | null
+          location_text: string | null
+          longitude: number | null
+          note: string | null
+          source: string
+          status: Database["public"]["Enums"]["delivery_status"] | null
+        }
+        Insert: {
+          created_at?: string
+          delivery_id: string
+          id?: string
+          latitude?: number | null
+          location_text?: string | null
+          longitude?: number | null
+          note?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["delivery_status"] | null
+        }
+        Update: {
+          created_at?: string
+          delivery_id?: string
+          id?: string
+          latitude?: number | null
+          location_text?: string | null
+          longitude?: number | null
+          note?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["delivery_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_events_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_fleet: {
+        Row: {
+          created_at: string
+          driver_name: string | null
+          driver_phone: string | null
+          fleet_type: Database["public"]["Enums"]["fleet_type"]
+          id: string
+          is_active: boolean
+          label: string
+          registration: string | null
+          tracker_device_id: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          fleet_type?: Database["public"]["Enums"]["fleet_type"]
+          id?: string
+          is_active?: boolean
+          label: string
+          registration?: string | null
+          tracker_device_id?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          fleet_type?: Database["public"]["Enums"]["fleet_type"]
+          id?: string
+          is_active?: boolean
+          label?: string
+          registration?: string | null
+          tracker_device_id?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_fleet_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
@@ -2074,6 +2203,9 @@ export type Database = {
         | "delivered"
         | "failed"
         | "cancelled"
+        | "dispatched"
+        | "out_for_delivery"
+        | "returned"
       dispute_status: "open" | "under_review" | "resolved" | "closed"
       dispute_type:
         | "wrong_product"
@@ -2083,6 +2215,7 @@ export type Database = {
         | "incorrect_price"
         | "delivery_problem"
         | "other"
+      fleet_type: "motorbike" | "car" | "van" | "bicycle"
       fulfillment_type: "pickup" | "delivery"
       inquiry_status: "open" | "answered" | "closed"
       inventory_event_type:
@@ -2307,6 +2440,9 @@ export const Constants = {
         "delivered",
         "failed",
         "cancelled",
+        "dispatched",
+        "out_for_delivery",
+        "returned",
       ],
       dispute_status: ["open", "under_review", "resolved", "closed"],
       dispute_type: [
@@ -2318,6 +2454,7 @@ export const Constants = {
         "delivery_problem",
         "other",
       ],
+      fleet_type: ["motorbike", "car", "van", "bicycle"],
       fulfillment_type: ["pickup", "delivery"],
       inquiry_status: ["open", "answered", "closed"],
       inventory_event_type: [

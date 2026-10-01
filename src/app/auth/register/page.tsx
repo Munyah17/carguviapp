@@ -22,8 +22,8 @@ export default function RegisterPage() {
         <Field label="Full name">
           <Input name="full_name" required autoComplete="name" />
         </Field>
-        <Field label="Phone" hint="Used for order updates and pickup coordination.">
-          <Input name="phone" type="tel" autoComplete="tel" placeholder="+263 7â€¦" />
+        <Field label="Phone / WhatsApp" hint="Required — used for order updates and pickup coordination.">
+          <Input name="phone" type="tel" required autoComplete="tel" placeholder="+263 77 000 0000" />
         </Field>
         <Field label="Email">
           <Input name="email" type="email" required autoComplete="email" />

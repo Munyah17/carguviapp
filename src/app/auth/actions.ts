@@ -73,6 +73,9 @@ export async function signUp(
   if (!fullName || !email || !password) {
     return { error: "Fill in your name, email and password." };
   }
+  if (!phone) {
+    return { error: "Add your phone or WhatsApp number — we need it for order updates." };
+  }
   if (password.length < 6) {
     return { error: "Password must be at least 6 characters." };
   }

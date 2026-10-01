@@ -56,8 +56,8 @@ export function Footer() {
               <span className="text-lg font-bold text-white">Carguvi</span>
             </span>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-400">
-              Zimbabwe&apos;s vehicle-parts marketplace. Verified stock from
-              Kaguvi Street vendors, delivered across Harare.
+              Zimbabwe&apos;s vehicle-parts marketplace. Verified stock,
+              delivered across the country.
             </p>
             <p className="mt-4 flex items-center gap-1.5 text-xs text-trust-400">
               <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><path d="M12 2l8 3v6c0 5-3.5 9.3-8 11-4.5-1.7-8-6-8-11V5l8-3z"/></svg>
