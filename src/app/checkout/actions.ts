@@ -29,6 +29,24 @@ export async function placeOrder(formData: FormData): Promise<{ error?: string }
       .eq("id", user.id);
   }
 
+  // Optional account creation at checkout — converts the anonymous guest
+  // session into a permanent account, keeping this order's history attached.
+  const newEmail = String(formData.get("new_email") ?? "").trim();
+  const newPassword = String(formData.get("new_password") ?? "");
+  if (newEmail && newPassword && user.is_anonymous) {
+    if (newPassword.length < 6) {
+      return { error: "Password must be at least 6 characters — or leave the account fields empty." };
+    }
+    const { error: upErr } = await supabase.auth.updateUser({
+      email: newEmail,
+      password: newPassword,
+      data: { full_name: guestName || undefined, phone: guestPhone || undefined },
+    });
+    if (upErr && !upErr.message.toLowerCase().includes("already")) {
+      return { error: `Order not placed — ${upErr.message}. Leave the account fields empty to check out as guest.` };
+    }
+  }
+
   // Inline address for guests / users with no saved addresses.
   const line1 = String(formData.get("addr_line1") ?? "").trim();
   if (!addressId && line1) {

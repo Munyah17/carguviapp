@@ -252,6 +252,44 @@ export function CheckoutForm({
         </p>
       </section>
 
+      {/* Optional account creation — the guest's order history transfers */}
+      <section className="rounded-xl border border-dashed border-brand-300 bg-brand-50/40 p-4">
+        <h2 className="text-sm font-semibold text-ink-900">
+          Save this order to an account{" "}
+          <span className="font-normal text-ink-400">(optional)</span>
+        </h2>
+        <p className="mt-1 text-xs text-ink-500">
+          Track orders and your garage next time — takes 10 seconds. Leave
+          blank to check out as a guest.
+        </p>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-ink-500">
+              Email
+            </span>
+            <input
+              name="new_email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              className="h-11 w-full rounded-lg border border-surface-300 bg-white px-3 text-base sm:text-sm"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-ink-500">
+              Password
+            </span>
+            <input
+              name="new_password"
+              type="password"
+              autoComplete="new-password"
+              minLength={6}
+              className="h-11 w-full rounded-lg border border-surface-300 bg-white px-3 text-base sm:text-sm"
+            />
+          </label>
+        </div>
+      </section>
+
       {error ? (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}

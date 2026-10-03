@@ -11,7 +11,7 @@ insert into auth.users (
 ) values
   ('00000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'munyamuzvidziwa19@gmail.com', crypt('@@Griezmann177#$', gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"Munyah","phone":"+263773909307","role":"super_admin"}', now(), now()),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Munyah Griezmann","phone":"+263773909307","role":"super_admin"}', now(), now()),
   ('00000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'admin@carguviapp.com', crypt('@Lamineyamal19', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Admin1","phone":"+263770123456","role":"admin"}', now(), now()),
