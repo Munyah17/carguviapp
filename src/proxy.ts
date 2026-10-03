@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database.types";
+import { createGuestSession } from "@/lib/guest";
 
 /**
  * Next.js 16 "proxy" (formerly middleware).
@@ -41,14 +42,13 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Bootstrap an anonymous guest session on first visit so add-to-cart,
-  // checkout and order tracking work instantly — no sign-in wall.
+  // Bootstrap a guest session on first visit so add-to-cart, checkout and
+  // order tracking work instantly — no sign-in wall. Falls back to a
+  // service-role provisioned guest when anonymous sign-ins are disabled.
   if (!user) {
-    const { error } = await supabase.auth.signInAnonymously();
-    if (error) {
-      // Anonymous auth disabled on the project — leave the user as a pure
-      // guest; guest-capable flows must degrade gracefully.
-      console.warn("anonymous session bootstrap failed:", error.message);
+    const guest = await createGuestSession(supabase);
+    if (!guest) {
+      console.warn("guest session bootstrap failed");
     }
   }
 

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ensureUser } from "@/lib/guest";
+import { ensureUser, isGuest } from "@/lib/guest";
 import { getPaymentProvider } from "@/lib/services/payments";
 import { getDeliveryProvider } from "@/lib/services/delivery";
 import { redirect } from "next/navigation";
@@ -33,7 +33,7 @@ export async function placeOrder(formData: FormData): Promise<{ error?: string }
   // session into a permanent account, keeping this order's history attached.
   const newEmail = String(formData.get("new_email") ?? "").trim();
   const newPassword = String(formData.get("new_password") ?? "");
-  if (newEmail && newPassword && user.is_anonymous) {
+  if (newEmail && newPassword && isGuest(user)) {
     if (newPassword.length < 6) {
       return { error: "Password must be at least 6 characters — or leave the account fields empty." };
     }
