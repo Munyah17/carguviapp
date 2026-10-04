@@ -75,42 +75,39 @@ export function CheckoutForm({
                 </li>
               ))}
             </ul>
-            <div className="grid grid-cols-2 gap-2 border-t border-surface-200 p-3">
-              <label className="tap flex cursor-pointer items-start gap-2 rounded-lg border border-surface-300 p-3 has-checked:border-brand-500 has-checked:bg-brand-50">
+            <div className="grid grid-cols-2 gap-2 border-t border-surface-200 px-3 py-2">
+              <label className="tap flex cursor-pointer items-center gap-2 rounded-lg border border-surface-300 px-2.5 py-2 has-checked:border-brand-500 has-checked:bg-brand-50">
                 <input
                   type="radio"
                   name={`fulfilment_${g.vendorId}`}
                   value="pickup"
                   defaultChecked
-                  className="mt-0.5"
                   onChange={() => setNeedsAddress(false)}
                 />
-                <span>
+                <span className="min-w-0">
                   <span className="flex items-center gap-1 text-sm font-medium text-ink-900">
-                    <IconStore className="h-4 w-4" /> Pickup
+                    <IconStore className="h-4 w-4 shrink-0" /> Pickup
                   </span>
                   {loc ? (
-                    <span className="mt-0.5 block text-xs text-ink-500">
-                      {loc.address}
-                      {loc.area ? `, ${loc.area}` : ""}
+                    <span className="block truncate text-xs text-ink-500">
+                      {loc.area || loc.address}
                     </span>
                   ) : null}
                 </span>
               </label>
-              <label className="tap flex cursor-pointer items-start gap-2 rounded-lg border border-surface-300 p-3 has-checked:border-brand-500 has-checked:bg-brand-50">
+              <label className="tap flex cursor-pointer items-center gap-2 rounded-lg border border-surface-300 px-2.5 py-2 has-checked:border-brand-500 has-checked:bg-brand-50">
                 <input
                   type="radio"
                   name={`fulfilment_${g.vendorId}`}
                   value="delivery"
-                  className="mt-0.5"
                   onChange={() => setNeedsAddress(true)}
                 />
-                <span>
+                <span className="min-w-0">
                   <span className="flex items-center gap-1 text-sm font-medium text-ink-900">
-                    <IconTruck className="h-4 w-4" /> Carguvi Delivery
+                    <IconTruck className="h-4 w-4 shrink-0" /> Delivery
                   </span>
-                  <span className="mt-0.5 block text-xs text-ink-500">
-                    Harare — within 40 km
+                  <span className="block truncate text-xs text-ink-500">
+                    ≤ 40 km
                   </span>
                 </span>
               </label>
