@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { daysSince, timeAgo, formatPrice } from "@/lib/format";
@@ -41,7 +41,7 @@ export default async function ConfirmationsPage() {
     .slice(0, 3);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Confirm listings</h1>
       <p className="mt-1 text-sm text-ink-500">
         Customers trust fresh listings. Confirm items that are still available â€”

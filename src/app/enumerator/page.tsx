@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRoles } from "@/lib/queries";
@@ -44,7 +44,7 @@ export default async function EnumeratorDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Today&apos;s assignments</h1>
       <p className="mt-1 text-sm text-ink-500">
         {byVendor.size} shops Â· {assigned.length} tasks Â·{" "}

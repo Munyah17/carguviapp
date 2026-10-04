@@ -52,7 +52,7 @@ export default async function OrderDetailPage({
   const reviewedVOs = new Set((myReviews ?? []).map((r: any) => r.vendor_order_id));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       {sp.placed ? (
         <div className="mb-4 flex items-center gap-2 rounded-xl border border-trust-100 bg-trust-50 p-4 text-sm font-medium text-trust-700">
           <IconCheck className="h-5 w-5" />

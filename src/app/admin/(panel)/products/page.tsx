@@ -28,7 +28,7 @@ export default async function AdminProductsPage({
   });
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">
         Products{stale === "1" ? " — stale" : ""}
       </h1>

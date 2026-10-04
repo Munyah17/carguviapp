@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getUserRoles } from "@/lib/queries";
@@ -44,7 +44,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
         <MobileMenu
           signedIn={!!user && !isGuest(user)}
           isVendor={roles.includes("vendor")}

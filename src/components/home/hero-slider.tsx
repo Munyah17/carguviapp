@@ -69,7 +69,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               style={{ opacity: Math.min(80, Math.max(60, s.overlay_opacity)) / 100 }}
             />
             <div className="absolute inset-0 flex items-center">
-              <div className="mx-auto w-full max-w-6xl px-4">
+              <div className="mx-auto w-full max-w-7xl px-4">
                 <div className="max-w-2xl">
                   <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
                     {s.title}

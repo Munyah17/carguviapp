@@ -52,7 +52,7 @@ export default async function CartPage() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-28 sm:pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-28 sm:pb-10">
       <h1 className="text-xl font-bold text-ink-900">Cart</h1>
 
       {groups.size === 0 ? (
@@ -166,7 +166,7 @@ export default async function CartPage() {
           })}
 
           <div className="fixed inset-x-0 bottom-14 z-30 border-t border-surface-200 bg-white p-4 sm:static sm:mt-6 sm:rounded-xl sm:border sm:p-4">
-            <div className="mx-auto flex max-w-3xl items-center justify-between">
+            <div className="mx-auto flex max-w-4xl items-center justify-between">
               <div>
                 <p className="text-xs text-ink-500">Subtotal</p>
                 <p className="text-lg font-bold text-ink-900">

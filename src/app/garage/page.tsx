@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerVehicles } from "@/lib/queries";
@@ -19,7 +19,7 @@ export default async function GaragePage() {
   const vehicles = await getCustomerVehicles(user.id);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink-900">My Garage</h1>
         <ButtonLink href="/garage/add" size="sm" variant="outline">

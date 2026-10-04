@@ -15,7 +15,7 @@ export default async function CategoriesPage() {
   const parents = all.filter((c: any) => !c.parent_id);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Browse categories</h1>
       <div className="mt-4 divide-y divide-surface-200 rounded-xl border border-surface-200 bg-white">
         {parents.map((c: any) => {

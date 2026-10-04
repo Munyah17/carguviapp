@@ -17,7 +17,7 @@ export default async function AdminOrdersPage() {
     .limit(100);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Orders</h1>
       <ul className="mt-4 divide-y divide-surface-100 rounded-xl border border-surface-200 bg-white">
         {(orders ?? []).map((o: any) => (

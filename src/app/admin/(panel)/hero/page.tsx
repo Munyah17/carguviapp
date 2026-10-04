@@ -92,7 +92,7 @@ export default async function AdminHeroPage() {
     .order("sort_order");
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Hero slides</h1>
       <p className="mt-1 text-sm text-ink-500">
         Banners on the home page hero carousel — order, text, images and

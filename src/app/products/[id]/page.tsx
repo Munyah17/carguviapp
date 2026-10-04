@@ -50,7 +50,7 @@ export default async function ProductPage({
     .limit(6);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-4 pb-24 sm:pb-10">
+    <div className="mx-auto max-w-7xl px-4 py-4 pb-24 sm:pb-10">
       <nav className="mb-3 text-sm text-ink-400">
         <Link href="/search" className="hover:text-ink-700">
           Search

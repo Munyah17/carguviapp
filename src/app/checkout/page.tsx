@@ -78,7 +78,7 @@ export default async function CheckoutPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-28 sm:pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-28 sm:pb-10">
       <h1 className="text-xl font-bold text-ink-900">Checkout</h1>
       <CheckoutForm
         groups={groupData}

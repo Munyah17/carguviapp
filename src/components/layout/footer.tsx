@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { Logo } from "./header";
 
 const COLS: { title: string; links: { href: string; label: string }[] }[] = [
@@ -42,7 +42,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
 export function Footer() {
   return (
     <footer className="border-t border-surface-200 bg-ink-950 text-ink-300">
-      <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="grid gap-8">
           <div>
             <span className="flex items-center gap-2">

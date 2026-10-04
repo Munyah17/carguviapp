@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { timeAgo } from "@/lib/format";
@@ -23,7 +23,7 @@ export default async function VendorInquiriesPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Customer inquiries</h1>
       <ul className="mt-4 space-y-3">
         {(inquiries ?? []).map((i: any) => (

@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default async function VendorStaffPage() {
   const isOwner = info.staffRole === "owner";
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Staff</h1>
       <p className="mt-1 text-sm text-ink-500">
         Employees with vendor-scoped permissions.

@@ -31,7 +31,7 @@ export default async function AdminVendorsPage({
   const { data: vendors } = await q;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Vendors</h1>
       <ul className="mt-4 space-y-3">
         {(vendors ?? []).map((v: any) => {

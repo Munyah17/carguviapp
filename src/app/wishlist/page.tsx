@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { toListItem } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
@@ -31,7 +31,7 @@ export default async function WishlistPage() {
     .map(toListItem);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-7xl px-4 py-6 pb-10">
       <h1 className="text-xl font-bold text-ink-900">Wishlist</h1>
       {products.length === 0 ? (
         <div className="mt-8 rounded-xl border border-dashed border-surface-300 bg-surface-50 p-10 text-center">

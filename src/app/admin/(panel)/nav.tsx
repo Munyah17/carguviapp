@@ -19,7 +19,7 @@ export function AdminNav({ isSuper }: { isSuper: boolean }) {
   ];
   return (
     <div className="sticky top-14 z-30 border-b border-surface-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
+      <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4">
         {items.map((i) => {
           const active = i.exact
             ? pathname === i.href

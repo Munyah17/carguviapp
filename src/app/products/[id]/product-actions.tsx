@@ -35,7 +35,7 @@ export function ProductActions({
   };
 
   return (
-    <div className="mx-auto flex max-w-6xl gap-2">
+    <div className="mx-auto flex max-w-7xl gap-2">
       <Button
         variant="outline"
         size="lg"

@@ -79,7 +79,7 @@ export default async function HomePage() {
       <HeroSlider slides={slides} />
 
       {/* Search — directly under the hero */}
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="mx-auto max-w-7xl px-4">
         <section className="-mt-8 relative z-10">
           <form
             action="/search"

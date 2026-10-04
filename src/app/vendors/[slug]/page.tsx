@@ -29,7 +29,7 @@ export default async function VendorPage({
     : vendor.vendor_metrics;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-7xl px-4 py-6 pb-10">
       {/* Storefront header */}
       <div className="rounded-xl border border-surface-200 bg-white p-5">
         <div className="flex items-start gap-4">

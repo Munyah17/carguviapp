@@ -57,7 +57,7 @@ export default async function VendorDeliveriesPage() {
     ]);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 pb-12">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-12">
       <h1 className="text-xl font-bold text-ink-900">Deliveries</h1>
       <p className="mt-1 text-sm text-ink-500">
         Dispatch orders to your riders/drivers. Every vehicle must carry a GPS

@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -23,7 +23,7 @@ export default async function NotificationsPage() {
     .limit(50);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink-900">Notifications</h1>
         {notifications?.some((n: any) => !n.read_at) ? (

@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getVendorForUser } from "@/lib/queries";
@@ -112,7 +112,7 @@ export default async function VendorDashboard() {
   const greet = greeting();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 pb-10">
+    <div className="mx-auto max-w-7xl px-4 py-6 pb-10">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-ink-900">

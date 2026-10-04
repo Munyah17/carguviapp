@@ -173,7 +173,7 @@ export default async function SearchPage({
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-4">
+    <div className="mx-auto max-w-7xl px-4 py-4">
       {/* Search bar */}
       <div className="flex gap-2">
         <form action="/search" className="flex flex-1 gap-2">

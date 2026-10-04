@@ -295,7 +295,7 @@ export function CheckoutForm({
 
       {/* Summary */}
       <div className="fixed inset-x-0 bottom-14 z-30 border-t border-surface-200 bg-white p-4 sm:static sm:rounded-xl sm:border sm:p-4">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           <div className="flex justify-between text-sm text-ink-500">
             <span>Subtotal</span>
             <span>{formatPrice(subtotal)}</span>
