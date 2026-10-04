@@ -42,4 +42,4 @@ Auth + Storage + RLS).
 ## Local ports
 
 Supabase local: API 58321, DB 58322, Studio 58323, Mailpit 58324.
-Dev server: http://localhost:3000.
+Dev server: http://localhost:5000 (locked — never use 3000–3500, they're congested).
