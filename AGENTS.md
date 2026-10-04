@@ -33,8 +33,11 @@ Auth + Storage + RLS).
   fallback), `demand` (vendor nudges). AI never mutates inventory truth.
 - Enum-typed columns: cast `formData` values to the `Database` enum types —
   generated types are strict.
-- Always commit and push to GitHub `master` after finishing work —
-  Vercel auto-deploys every push (project: carguviapp).
+- Deploy direct to Vercel FIRST, verify live, then commit + push to GitHub
+  `master`. Git integration is DISCONNECTED — pushes do not deploy.
+  Deploy: `npx vercel deploy --prod --yes --token <token>` (project:
+  carguviapp, id prj_BrM1304J8G2wRHLBUj3m3q31hwR6). Token is a secret —
+  ask the user for it if not already provided this session; never commit it.
 
 ## Local ports
 
