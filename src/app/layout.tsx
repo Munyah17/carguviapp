@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Footer } from "@/components/layout/footer";
 import { isSupabaseConfigured } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import { getUserRoles } from "@/lib/queries";
 
 const geistSans = Geist({
@@ -42,10 +42,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   let roles: string[] = [];
   let signedIn = false;
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     if (user) {
       signedIn = true;
       roles = await getUserRoles(user.id);

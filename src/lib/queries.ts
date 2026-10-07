@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { cache } from "react";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { unstable_cache } from "next/cache";
 import type { ProductListItem } from "./types";
@@ -300,21 +301,21 @@ export const getVehicleEngines = unstable_cache(
 // ---------------------------------------------------------------------------
 
 export async function getCurrentUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  return getAuthUser();
 }
 
-export async function getUserRoles(userId: string): Promise<string[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId);
-  return (data ?? []).map((r: any) => r.role);
-}
+// cache() dedupes per request — layout and header both ask for the same
+// user's roles, which was a duplicated DB round-trip on every page.
+export const getUserRoles = cache(
+  async (userId: string): Promise<string[]> => {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    return (data ?? []).map((r: any) => r.role);
+  },
+);
 
 /** Vendor the current user owns or works for (first match). */
 export async function getVendorForUser(userId: string) {
@@ -364,6 +365,50 @@ export const getHeroSlides = unstable_cache(
   ["hero-slides"],
   { revalidate: 300, tags: ["hero-slides"] },
 );
+
+/**
+ * Batched featured-category fetch for the homepage: one children lookup +
+ * one products query for ALL parent ids, then grouped by parent category
+ * in JS — replaces a searchProducts() call per category (N+1).
+ */
+export async function getProductsForCategories(
+  categoryIds: number[],
+  perCategory = 8,
+): Promise<Map<number, ProductListItem[]>> {
+  const result = new Map<number, ProductListItem[]>();
+  if (categoryIds.length === 0) return result;
+
+  const supabase = await createClient();
+  const { data: children } = await supabase
+    .from("categories")
+    .select("id, parent_id")
+    .in("parent_id", categoryIds);
+
+  const childToParent = new Map<number, number>();
+  for (const ch of children ?? []) {
+    childToParent.set((ch as any).id, (ch as any).parent_id);
+  }
+  const allIds = [...categoryIds, ...childToParent.keys()];
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(`category_id, ${PRODUCT_LIST_SELECT}`)
+    .eq("status", "active")
+    .in("category_id", allIds)
+    .order("carguvi_verified_at", { ascending: false, nullsFirst: false })
+    .limit(categoryIds.length * perCategory);
+  if (error) throw error;
+
+  for (const row of data ?? []) {
+    const parentId = childToParent.get((row as any).category_id) ?? (row as any).category_id;
+    const bucket = result.get(parentId) ?? [];
+    if (bucket.length < perCategory) {
+      bucket.push(toListItem(row));
+      result.set(parentId, bucket);
+    }
+  }
+  return result;
+}
 
 /** "Verified near you" — recently Carguvi-confirmed products. */
 export async function getVerifiedProducts(limit = 8) {

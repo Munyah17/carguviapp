@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import {
   getCategories,
   getCustomerVehicles,
   getHeroSlides,
   getPopularSearches,
+  getProductsForCategories,
   getVerifiedProducts,
   getVehicleMakes,
-  searchProducts,
 } from "@/lib/queries";
 import { ProductCard } from "@/components/product/product-card";
 import { HeroSlider, type HeroSlide } from "@/components/home/hero-slider";
@@ -39,36 +39,40 @@ export default async function HomePage() {
   let featuredSections: { category: any; products: any[] }[] = [];
 
   if (configured) {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
-    const [cats, ver, pop, veh, slideRes, mk] = await Promise.all([
-      getCategories(),
-      getVerifiedProducts(8),
-      getPopularSearches(),
-      user ? getCustomerVehicles(user.id) : Promise.resolve([]),
-      getHeroSlides(),
-      getVehicleMakes(),
-    ]);
-    categories = cats;
-    verified = ver;
-    popular = pop;
-    vehicles = veh;
-    slides = slideRes as HeroSlide[];
-    makes = mk;
+    try {
+      user = await getAuthUser();
+      const [cats, ver, pop, veh, slideRes, mk] = await Promise.all([
+        getCategories(),
+        getVerifiedProducts(8),
+        getPopularSearches(),
+        user ? getCustomerVehicles(user.id) : Promise.resolve([]),
+        getHeroSlides(),
+        getVehicleMakes(),
+      ]);
+      categories = cats;
+      verified = ver;
+      popular = pop;
+      vehicles = veh;
+      slides = slideRes as HeroSlide[];
+      makes = mk;
 
-    // Products for featured category sections (top-level categories only).
-    const featured = categories.filter((c) =>
-      FEATURED_SLUGS.includes(c.slug),
-    );
-    featuredSections = (
-      await Promise.all(
-        featured.map(async (c) => ({
-          category: c,
-          products: await searchProducts({ categoryId: c.id }),
-        })),
-      )
-    ).filter((s) => s.products.length > 0);
+      // Products for featured category sections — one batched query for
+      // all categories, grouped by parent, instead of a query per category.
+      const featured = categories.filter((c) =>
+        FEATURED_SLUGS.includes(c.slug),
+      );
+      const grouped = await getProductsForCategories(
+        featured.map((c) => c.id),
+        8,
+      );
+      featuredSections = featured
+        .map((c) => ({ category: c, products: grouped.get(c.id) ?? [] }))
+        .filter((s) => s.products.length > 0);
+    } catch (err) {
+      // A DB outage should degrade the homepage to its empty state, not
+      // blank the whole page behind the error boundary.
+      console.error("homepage: catalog fetch failed", err);
+    }
   }
 
   const primaryVehicle = vehicles.find((v: any) => v.is_primary) ?? vehicles[0];
@@ -306,11 +310,18 @@ export default async function HomePage() {
               </Link>
             </div>
             <PeekRail cols="sm:grid-cols-4">
-              {products.slice(0, 6).map((p: any) => (
+              {products.slice(0, 8).map((p: any) => (
                 <PeekItem key={p.id}>
                   <ProductCard product={p} />
                 </PeekItem>
               ))}
+              {rowFillers(Math.min(products.length, 8), category).map(
+                (f, i) => (
+                  <PeekItem key={`fill-${i}`}>
+                    <RailFillTile {...f} />
+                  </PeekItem>
+                ),
+              )}
             </PeekRail>
           </section>
         ))}
@@ -324,10 +335,15 @@ export default async function HomePage() {
                 Verified near you
               </h2>
             </div>
-            <PeekRail cols="sm:grid-cols-3 lg:grid-cols-4">
-              {verified.map((p) => (
+            <PeekRail cols="sm:grid-cols-4">
+              {verified.slice(0, 8).map((p) => (
                 <PeekItem key={p.id}>
                   <ProductCard product={p} />
+                </PeekItem>
+              ))}
+              {rowFillers(Math.min(verified.length, 8)).map((f, i) => (
+                <PeekItem key={`fill-${i}`}>
+                  <RailFillTile {...f} />
                 </PeekItem>
               ))}
             </PeekRail>
@@ -354,6 +370,41 @@ export default async function HomePage() {
         </section>
       </div>
     </div>
+  );
+}
+
+type RailFiller = {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  href: string;
+};
+
+/**
+ * CTA tiles that complete a product rail's last grid row — the 4-column
+ * desktop grid never renders an empty cell. At most 3 are ever needed.
+ */
+function rowFillers(shown: number, category?: any): RailFiller[] {
+  const fillers: RailFiller[] = [
+    {
+      icon: IconChevronRight,
+      label: category ? `All ${category.name}` : "Browse all parts",
+      href: category ? `/search?category_id=${category.id}` : "/search",
+    },
+    { icon: IconSearch, label: "Request a part", href: "/request-part" },
+    { icon: IconShield, label: "Verified parts", href: "/search?verified=1" },
+  ];
+  return fillers.slice(0, (4 - (shown % 4)) % 4);
+}
+
+function RailFillTile({ icon: Icon, label, href }: RailFiller) {
+  return (
+    <Link
+      href={href}
+      className="tap flex h-full min-h-[190px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-surface-300 bg-surface-50 p-4 text-center text-ink-500 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+    >
+      <Icon className="h-6 w-6" />
+      <span className="text-xs font-semibold leading-tight">{label}</span>
+    </Link>
   );
 }
 

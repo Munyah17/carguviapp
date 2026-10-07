@@ -1,9 +1,13 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "@/lib/database.types";
 import { isSupabaseConfigured, SupabaseNotConfiguredError } from "@/lib/env";
 
-export async function createClient() {
+// React cache() dedupes per request: layout, header and page components
+// previously each built a client (and each auth.getUser() was a network
+// round-trip). One client + one getUser per render now.
+export const createClient = cache(async () => {
   // cookies() marks the route dynamic — must run before the config check so
   // builds don't try to prerender DB-backed pages.
   const cookieStore = await cookies();
@@ -29,4 +33,13 @@ export async function createClient() {
       },
     },
   );
-}
+});
+
+/** Current auth user, memoized per request (dedupes auth.getUser calls). */
+export const getAuthUser = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});

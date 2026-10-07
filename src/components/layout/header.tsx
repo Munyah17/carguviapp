@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getUserRoles } from "@/lib/queries";
 import { isGuest } from "@/lib/guest";
@@ -34,9 +34,7 @@ export async function Header() {
   let user = null;
   let roles: string[] = [];
   if (isSupabaseConfigured()) {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
+    user = await getAuthUser();
     if (user) {
       roles = await getUserRoles(user.id);
     }

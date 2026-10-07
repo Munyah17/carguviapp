@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
   searchProducts,
   getCategories,
@@ -46,45 +46,59 @@ export default async function SearchPage({
 
   let results: Awaited<ReturnType<typeof searchProducts>> = [];
   let aiNote: { make?: string; model?: string; keywords?: string[] } | null = null;
-  const [initialResults, categories, makes, models, generations, engines, areas] =
-    await Promise.all([
-      searchProducts({
-        q,
-        categoryId,
-        makeId,
-        modelId,
-        generationId,
-        engineId,
-        partNumber,
-        area,
-        year,
-        condition,
-        availability,
-        verifiedOnly,
-        pickupOnly,
-        deliveryOnly,
-        minPrice,
-        maxPrice,
-        sort: (sort as any) ?? "relevance",
-      }),
-      getCategories(),
-      getVehicleMakes(),
-      makeId ? getVehicleModels(makeId) : getVehicleModels(),
-      modelId ? getVehicleGenerations(modelId) : getVehicleGenerations(),
-      generationId
-        ? getVehicleEngines(generationId)
-        : getVehicleEngines(),
-      getVendorAreas(),
-    ]);
-  results = initialResults;
+  let categories: any[] = [];
+  let makes: any[] = [];
+  let models: any[] = [];
+  let generations: any[] = [];
+  let engines: any[] = [];
+  let areas: string[] = [];
+  try {
+    const [initialResults, cats, mks, mds, gens, engs, ars] =
+      await Promise.all([
+        searchProducts({
+          q,
+          categoryId,
+          makeId,
+          modelId,
+          generationId,
+          engineId,
+          partNumber,
+          area,
+          year,
+          condition,
+          availability,
+          verifiedOnly,
+          pickupOnly,
+          deliveryOnly,
+          minPrice,
+          maxPrice,
+          sort: (sort as any) ?? "relevance",
+        }),
+        getCategories(),
+        getVehicleMakes(),
+        makeId ? getVehicleModels(makeId) : getVehicleModels(),
+        modelId ? getVehicleGenerations(modelId) : getVehicleGenerations(),
+        generationId
+          ? getVehicleEngines(generationId)
+          : getVehicleEngines(),
+        getVendorAreas(),
+      ]);
+    results = initialResults;
+    categories = cats;
+    makes = mks;
+    models = mds;
+    generations = gens;
+    engines = engs;
+    areas = ars;
+  } catch (err) {
+    // A DB outage should degrade search to an empty result set, not
+    // blank the whole page behind the error boundary.
+    console.error("search: catalog fetch failed", err);
+  }
 
   // Garage vehicles for the "My vehicle" quick filter.
   const supabase = isSupabaseConfigured() ? await createClient() : null;
-  const {
-    data: { user },
-  } = supabase
-    ? await supabase.auth.getUser()
-    : { data: { user: null } };
+  const user = supabase ? await getAuthUser() : null;
   const { data: garageVehicles } = supabase && user
     ? await supabase
         .from("customer_vehicles")
@@ -128,7 +142,7 @@ export default async function SearchPage({
           categoryId,
           verifiedOnly,
           limit: 50,
-        });
+        }).catch(() => []);
         if (alt.length) {
           results = alt;
           aiNote = interpretation;
