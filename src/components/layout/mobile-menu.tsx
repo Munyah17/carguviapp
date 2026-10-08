@@ -32,18 +32,20 @@ export function MobileMenu({ signedIn, isVendor, isAdmin, isEnumerator }: Props)
         { href: "/cart", label: "Cart" },
       ],
     },
-    {
-      title: "Account",
-      links: [
-        { href: "/orders", label: "My orders" },
-        { href: "/wishlist", label: "Wishlist" },
-        { href: "/garage", label: "My vehicles" },
-        { href: "/inquiries", label: "My inquiries" },
-        { href: "/notifications", label: "Notifications" },
-        { href: "/account", label: "Account details" },
-        { href: "/disputes/new", label: "Report a problem" },
-      ],
-    },
+    ...(signedIn
+      ? [{
+          title: "Account",
+          links: [
+            { href: "/orders", label: "My orders" },
+            { href: "/wishlist", label: "Wishlist" },
+            { href: "/garage", label: "My vehicles" },
+            { href: "/inquiries", label: "My inquiries" },
+            { href: "/notifications", label: "Notifications" },
+            { href: "/account", label: "Account details" },
+            { href: "/disputes/new", label: "Report a problem" },
+          ],
+        }]
+      : []),
     ...(isVendor
       ? [{
           title: "Vendor",
@@ -64,12 +66,16 @@ export function MobileMenu({ signedIn, isVendor, isAdmin, isEnumerator }: Props)
       ? [{ title: "Operations", links: [{ href: "/admin", label: "Admin console" }] }]
       : []),
     {
-      links: [
-        signedIn
-          ? { href: "/account", label: "Sign out (account page)" }
-          : { href: "/login", label: "Sign in" },
-        { href: "/vendor/apply", label: "Sell on Carguvi" },
-      ],
+      links: signedIn
+        ? [
+            { href: "/account", label: "Sign out (account page)" },
+            { href: "/vendor/apply", label: "Sell on Carguvi" },
+          ]
+        : [
+            { href: "/login", label: "Sign in" },
+            { href: "/auth/register", label: "Get Started" },
+            { href: "/vendor/apply", label: "Sell on Carguvi" },
+          ],
     },
   ];
 
@@ -130,6 +136,20 @@ export function MobileMenu({ signedIn, isVendor, isAdmin, isEnumerator }: Props)
                 </div>
               ))}
             </nav>
+            {signedIn ? (
+              <div className="border-t border-surface-100 p-3">
+                <Link
+                  href="/"
+                  onClick={() => setOpen(false)}
+                  className="tap flex items-center justify-center gap-2 rounded-lg border border-surface-300 px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-surface-100"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4" aria-hidden>
+                    <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Back to website
+                </Link>
+              </div>
+            ) : null}
           </div>
         </div>,
         document.body,
